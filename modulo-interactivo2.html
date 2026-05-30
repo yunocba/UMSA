@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Del Problema a la Propuesta — IA en la Enseñanza de Inglés</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,700;0,800;1,400;1,700&family=Outfit:wght@300;400;500;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue:    #5680E9;
+    --sky:     #84CEEB;
+    --mid:     #5AB9EA;
+    --lavender:#C1C8E4;
+    --purple:  #8860D0;
+    --dark:    #1a1630;
+    --darker:  #120f24;
+    --white:   #ffffff;
+    --text:    #e8eaf6;
+    --muted:   #9aa0c4;
+    --border:  rgba(255,255,255,0.12);
+    --sans:    'Plus Jakarta Sans', sans-serif;
+    --display: 'Outfit', sans-serif;
+    --mono:    'DM Mono', monospace;
+    --grad: linear-gradient(135deg, #5680E9 0%, #5AB9EA 40%, #84CEEB 65%, #8860D0 100%);
+    --grad2: linear-gradient(135deg, #8860D0, #5680E9);
+    --grad3: linear-gradient(135deg, #5AB9EA, #84CEEB);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--darker);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ── PROGRESS BAR ── */
+  #progress-bar {
+    position: fixed; top: 0; left: 0; height: 3px;
+    background: var(--grad); width: 0%; z-index: 1000;
+    transition: width 0.1s;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 900;
+    background: rgba(18,15,36,0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 0.85rem 2.5rem;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-logo {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--muted); text-decoration: none;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--sky); }
+
+  /* ── HERO ── */
+  #hero {
+    min-height: 100vh; display: flex; flex-direction: column;
+    justify-content: center; padding: 9rem 3rem 5rem;
+    position: relative; overflow: hidden;
+    background: var(--darker);
+  }
+
+  .hero-blob {
+    position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.35; pointer-events: none;
+  }
+  .blob1 { width: 600px; height: 600px; top: -150px; right: -100px; background: var(--purple); }
+  .blob2 { width: 500px; height: 500px; bottom: -100px; left: -80px; background: var(--blue); }
+  .blob3 { width: 300px; height: 300px; top: 40%; left: 40%; background: var(--sky); opacity: 0.2; }
+
+  .hero-eyebrow {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.3em;
+    text-transform: uppercase;
+    background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1.5rem;
+    opacity: 0; transform: translateY(20px);
+    animation: fadeUp 0.8s 0.3s forwards;
+  }
+  .hero-title {
+    font-family: var(--display); font-size: clamp(2.8rem, 6vw, 5.8rem);
+    font-weight: 900; line-height: 1.05; color: var(--white);
+    max-width: 860px; position: relative; z-index: 1;
+    opacity: 0; transform: translateY(30px);
+    animation: fadeUp 0.9s 0.5s forwards;
+  }
+  .hero-title .grad-text {
+    background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-subtitle {
+    font-size: 1.1rem; color: var(--muted); max-width: 600px;
+    margin-top: 1.5rem; font-weight: 400; line-height: 1.7;
+    position: relative; z-index: 1;
+    opacity: 0; transform: translateY(20px);
+    animation: fadeUp 0.8s 0.7s forwards;
+  }
+  .hero-meta {
+    display: flex; gap: 2.5rem; margin-top: 3rem; flex-wrap: wrap;
+    position: relative; z-index: 1;
+    opacity: 0; transform: translateY(20px);
+    animation: fadeUp 0.8s 0.9s forwards;
+  }
+  .hero-meta-item { display: flex; flex-direction: column; gap: 0.2rem; }
+  .hero-meta-label {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.25em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .hero-meta-value { font-size: 0.9rem; color: var(--lavender); font-weight: 500; }
+
+  .hero-cta {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    margin-top: 2.5rem; padding: 0.9rem 2rem;
+    background: var(--grad); border-radius: 40px;
+    font-family: var(--display); font-size: 0.9rem; font-weight: 700;
+    color: white; text-decoration: none; cursor: pointer; border: none;
+    position: relative; z-index: 1;
+    opacity: 0; animation: fadeUp 0.8s 1.1s forwards;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  .hero-cta:hover { opacity: 0.9; transform: translateY(-2px); }
+
+  /* ── SECTION STRUCTURE ── */
+  .section-wrap { padding: 6rem 3rem; max-width: 1200px; margin: 0 auto; }
+
+  .section-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: rgba(86,128,233,0.12); border: 1px solid rgba(86,128,233,0.3);
+    border-radius: 40px; padding: 0.3rem 1rem;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--sky);
+    margin-bottom: 1.25rem;
+  }
+  .section-title {
+    font-family: var(--display); font-size: clamp(1.8rem, 3.5vw, 3rem);
+    font-weight: 800; line-height: 1.15; margin-bottom: 1.25rem; color: var(--white);
+  }
+  .section-title .grad-text {
+    background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .section-lead {
+    font-size: 1.05rem; color: var(--muted); max-width: 640px; line-height: 1.8; margin-bottom: 3rem;
+  }
+
+  /* ── SCENE CARDS ── */
+  .scene-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.25rem;
+    margin-top: 2.5rem;
+  }
+  .scene-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.75rem;
+    transition: transform 0.3s, background 0.3s, border-color 0.3s;
+    position: relative; overflow: hidden;
+  }
+  .scene-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--grad);
+  }
+  .scene-card:hover {
+    transform: translateY(-4px);
+    background: rgba(255,255,255,0.07);
+    border-color: rgba(86,128,233,0.35);
+  }
+  .scene-card-num {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 0.75rem;
+  }
+  .scene-card h3 {
+    font-family: var(--display); font-size: 1.1rem; margin-bottom: 0.6rem;
+    font-weight: 700; color: var(--white);
+  }
+  .scene-card p { font-size: 0.88rem; color: var(--muted); line-height: 1.65; }
+
+  .scene-card.dark {
+    background: linear-gradient(135deg, rgba(136,96,208,0.2), rgba(86,128,233,0.15));
+    border-color: rgba(136,96,208,0.4);
+  }
+
+  /* PULLQUOTE */
+  .pullquote {
+    border-radius: 16px; padding: 2.5rem;
+    background: linear-gradient(135deg, rgba(86,128,233,0.12), rgba(136,96,208,0.12));
+    border: 1px solid rgba(136,96,208,0.25);
+    margin: 3rem 0;
+  }
+  .pullquote p {
+    font-family: var(--display); font-size: 1.3rem; font-weight: 500;
+    color: var(--white); line-height: 1.5; font-style: italic;
+  }
+  .pullquote cite {
+    display: block; margin-top: 1rem;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--muted);
+  }
+
+  /* STATS */
+  .stat-row { display: flex; gap: 2.5rem; margin: 3rem 0; flex-wrap: wrap; }
+  .stat-item { display: flex; flex-direction: column; gap: 0.25rem; }
+  .stat-num {
+    font-family: var(--display); font-size: 3.5rem; font-weight: 900;
+    background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; line-height: 1;
+  }
+  .stat-label {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--muted); max-width: 180px; line-height: 1.4;
+  }
+
+  /* ── AUDIO SECTION ── */
+  .audio-section { background: rgba(255,255,255,0.02); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 5rem 3rem; }
+  .audio-inner { max-width: 1200px; margin: 0 auto; }
+  .audio-cards { display: flex; flex-direction: column; gap: 1rem; margin-top: 2.5rem; }
+
+  .audio-card {
+    background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.5rem 2rem;
+    display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .audio-card:hover { background: rgba(255,255,255,0.06); border-color: rgba(90,185,234,0.35); }
+
+  .audio-ep-badge {
+    width: 48px; height: 48px; border-radius: 12px; flex-shrink: 0;
+    background: var(--grad); display: flex; align-items: center; justify-content: center;
+    font-family: var(--display); font-size: 1.1rem; font-weight: 800; color: white;
+  }
+  .audio-info { flex: 1; min-width: 200px; }
+  .audio-info h4 { font-family: var(--display); font-size: 1rem; color: var(--white); font-weight: 600; margin-bottom: 0.2rem; }
+  .audio-info p { font-size: 0.82rem; color: var(--muted); }
+  .audio-stack { flex: 1.5; min-width: 240px; }
+  audio { width: 100%; height: 36px; accent-color: var(--blue); }
+
+  /* ── DIALOGUE ── */
+  .dialogue-section { background: var(--darker); }
+
+  .author-tabs {
+    display: flex; gap: 0; flex-wrap: wrap;
+    border-bottom: 1px solid var(--border); margin-bottom: 0;
+  }
+  .author-tab {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+    text-transform: uppercase; padding: 0.8rem 1.4rem;
+    cursor: pointer; color: var(--muted); border: none; background: none;
+    transition: all 0.2s; border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+  }
+  .author-tab:hover { color: var(--sky); }
+  .author-tab.active { color: var(--sky); border-bottom-color: var(--sky); }
+
+  .author-panel { display: none; padding: 2.5rem 0; }
+  .author-panel.active { display: block; }
+
+  .author-header { display: flex; gap: 1.5rem; align-items: flex-start; margin-bottom: 2.5rem; flex-wrap: wrap; }
+  .author-avatar {
+    width: 72px; height: 72px; border-radius: 14px; flex-shrink: 0;
+    background: var(--grad); display: flex; align-items: center;
+    justify-content: center; font-family: var(--display); font-size: 1.4rem;
+    color: white; font-weight: 800;
+  }
+  .author-bio h3 { font-family: var(--display); font-size: 1.4rem; font-weight: 800; color: var(--white); }
+  .author-bio .author-field {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--sky); margin-top: 0.25rem;
+  }
+  .author-bio p { font-size: 0.9rem; color: var(--muted); margin-top: 0.6rem; max-width: 520px; }
+  .author-bio a { color: var(--purple); font-size: 0.82rem; font-family: var(--mono); }
+
+  .dialogue-thread { display: flex; flex-direction: column; gap: 1.25rem; }
+
+  .dialogue-q, .dialogue-a {
+    max-width: 760px; padding: 1.5rem 1.75rem; border-radius: 16px;
+  }
+  .dialogue-q {
+    background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+    align-self: flex-start; border-top-left-radius: 4px;
+  }
+  .dialogue-a {
+    background: linear-gradient(135deg, rgba(86,128,233,0.15), rgba(136,96,208,0.15));
+    border: 1px solid rgba(136,96,208,0.25);
+    align-self: flex-end; margin-left: auto; border-top-right-radius: 4px;
+  }
+  .dialogue-speaker {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.2em;
+    text-transform: uppercase; margin-bottom: 0.6rem;
+  }
+  .dialogue-q .dialogue-speaker { color: var(--muted); }
+  .dialogue-a .dialogue-speaker { color: var(--sky); }
+  .dialogue-q p { font-size: 0.95rem; line-height: 1.7; color: var(--lavender); }
+  .dialogue-a p { font-size: 0.95rem; line-height: 1.7; color: var(--lavender); }
+  .dialogue-a strong { color: var(--white); }
+
+  /* ── PROPOSAL ── */
+  .steps-container { margin-top: 2.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
+  .step {
+    display: grid; grid-template-columns: 64px 1fr; gap: 1.5rem;
+    background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+    border-radius: 16px; padding: 2rem; align-items: start;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .step:hover { background: rgba(255,255,255,0.055); border-color: rgba(90,185,234,0.3); }
+  @media (max-width: 600px) { .step { grid-template-columns: 48px 1fr; gap: 1rem; } }
+
+  .step-num {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: var(--grad); display: flex; align-items: center; justify-content: center;
+    font-family: var(--display); font-size: 1.3rem; font-weight: 900; color: white;
+  }
+  .step-content h3 { font-family: var(--display); font-size: 1.1rem; font-weight: 700; margin-bottom: 0.4rem; color: var(--white); }
+  .step-content p { font-size: 0.9rem; color: var(--muted); line-height: 1.7; }
+  .step-tag {
+    display: inline-block; font-family: var(--mono); font-size: 9px;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    background: rgba(90,185,234,0.12); color: var(--sky);
+    border: 1px solid rgba(90,185,234,0.25);
+    padding: 0.2rem 0.65rem; border-radius: 40px; margin-bottom: 0.6rem;
+  }
+
+  /* EVAL TABLE */
+  .eval-table { width: 100%; border-collapse: collapse; margin-top: 3rem; font-size: 0.88rem; }
+  .eval-table th {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--muted);
+    border-bottom: 1px solid var(--border); padding: 0.75rem 1rem; text-align: left;
+  }
+  .eval-table td { padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: top; line-height: 1.6; color: var(--lavender); }
+  .eval-table tr:hover td { background: rgba(255,255,255,0.025); }
+  .eval-table td strong { color: var(--white); }
+  .eval-pill {
+    display: inline-block; font-family: var(--mono); font-size: 9px;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 0.2rem 0.65rem; border-radius: 40px;
+    border: 1px solid rgba(136,96,208,0.4); color: var(--purple);
+    background: rgba(136,96,208,0.1);
+  }
+
+  /* ── REF GRID ── */
+  .ref-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 1rem; margin-top: 2rem; }
+  .ref-card {
+    background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.25rem 1.5rem; text-decoration: none; color: inherit;
+    transition: all 0.2s; display: block;
+  }
+  .ref-card:hover { border-color: rgba(86,128,233,0.45); background: rgba(86,128,233,0.07); transform: translateY(-3px); }
+  .ref-card-label {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--sky); margin-bottom: 0.5rem;
+  }
+  .ref-card h4 { font-family: var(--display); font-size: 0.95rem; font-weight: 700; color: var(--white); }
+  .ref-card p { font-size: 0.78rem; color: var(--muted); margin-top: 0.25rem; }
+  .ref-card .arrow { display: inline-block; margin-top: 0.75rem; font-size: 0.82rem; color: var(--blue); font-family: var(--mono); }
+
+  /* ── VIDEO ── */
+  .video-wrap {
+    position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;
+    margin: 2rem 0; border-radius: 16px; border: 1px solid var(--border);
+    background: var(--dark);
+  }
+  .video-wrap iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; border-radius: 16px; }
+  .video-caption { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; color: var(--muted); margin-top: 0.5rem; }
+
+  /* ── CONCLUSION ── */
+  #conclusion {
+    padding: 8rem 3rem; text-align: center;
+    background: linear-gradient(160deg, var(--darker) 0%, #1e1640 50%, var(--darker) 100%);
+    position: relative; overflow: hidden;
+  }
+  #conclusion .blob-c {
+    position: absolute; width: 700px; height: 700px;
+    border-radius: 50%; filter: blur(100px); opacity: 0.2; pointer-events: none;
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background: radial-gradient(circle, var(--purple), var(--blue));
+  }
+  #conclusion .inner { max-width: 780px; margin: 0 auto; position: relative; z-index: 1; }
+  .conclusion-quote {
+    font-family: var(--display); font-size: clamp(1.4rem, 3vw, 2.4rem);
+    font-weight: 700; color: var(--white); line-height: 1.45; margin-bottom: 2rem;
+  }
+  .conclusion-quote span {
+    background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .conclusion-attribution { font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
+  .conclusion-authors { display: flex; justify-content: center; gap: 1.5rem; margin-top: 4rem; flex-wrap: wrap; }
+  .conclusion-author {
+    font-family: var(--display); font-size: 0.9rem; font-weight: 600;
+    color: var(--lavender);
+    background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+    border-radius: 40px; padding: 0.5rem 1.2rem;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: #0c0a1a; padding: 2rem 3rem;
+    text-align: center;
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--muted);
+    border-top: 1px solid var(--border);
+  }
+  footer a { color: var(--sky); text-decoration: none; }
+
+  /* ── DIVIDER ── */
+  .divider { width: 100%; border: none; border-top: 1px solid var(--border); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeIn { to { opacity: 1; } }
+
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s, transform 0.7s; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<!-- NAV -->
+<nav>
+  <span class="nav-logo">Profesorado UMSA · Cultura Digital 2026</span>
+  <ul class="nav-links">
+    <li><a href="#scene">La Escena</a></li>
+    <li><a href="#audios">Audios</a></li>
+    <li><a href="#dialogue">Los Autores</a></li>
+    <li><a href="#proposal">La Propuesta</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-blob blob1"></div>
+  <div class="hero-blob blob2"></div>
+  <div class="hero-blob blob3"></div>
+
+  <p class="hero-eyebrow">Trabajo Parcial · Profesorado de Inglés · UMSA 2026</p>
+  <h1 class="hero-title">
+    Clonación de saberes<br>
+    <span class="grad-text">vs. producción</span><br>
+    con sentido
+  </h1>
+  <p class="hero-subtitle">
+    El desafío de la cultura digital y la inteligencia artificial en la enseñanza de lenguas extranjeras.
+  </p>
+  <div class="hero-meta">
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Autores</span>
+      <span class="hero-meta-value">Juri · Gómez · Suárez</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Materia</span>
+      <span class="hero-meta-value">Cultura Digital</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Marco teórico</span>
+      <span class="hero-meta-value">Dussel · Scolari · Castells</span>
+    </div>
+  </div>
+  <a href="#scene" class="hero-cta">Explorar el módulo ↓</a>
+</section>
+
+<!-- SECTION 1: THE SCENE -->
+<div id="scene" style="background: var(--dark);">
+<div class="section-wrap">
+  <span class="section-badge reveal">Sección 01</span>
+  <h2 class="section-title reveal reveal-delay-1">La escena del aula</h2>
+  <p class="section-lead reveal reveal-delay-2">
+    Una situación concreta y habitual en la práctica docente de inglés en nivel intermedio. No es una excepción. Es un síntoma.
+  </p>
+<div class="audio-card reveal">
+  <div class="audio-ep-badge">1</div>
+  <div class="audio-info">
+    <h4>La escena: el aula como laboratorio</h4>
+    <p>Descripción del problema y contexto pedagógico</p>
+  </div>
+  <div class="audio-stack">
+    <audio controls>
+      <source src="https://res.cloudinary.com/djhitjptl/video/upload/v1780157648/part1_j4gvsn.mp4" type="audio/mp4">
+      Tu navegador no soporta audio HTML5.
+    </audio>
+  </div>
+</div>
+  <div class="scene-grid">
+    <div class="scene-card reveal reveal-delay-1">
+      <p class="scene-card-num">El Contexto</p>
+      <h3>Tarea domiciliaria</h3>
+      <p>Hábitos y experiencias del pasado en inglés. Nivel intermedio. Entrega vía Google Classroom. Consigna: escribir sobre la vida cotidiana usando tiempos verbales vistos en clase.</p>
+    </div>
+    <div class="scene-card reveal reveal-delay-2">
+      <p class="scene-card-num">La Situación</p>
+      <h3>Perfección sospechosa</h3>
+      <p>Prosa con voces pasivas complejas y conectores atípicos del nivel: <em>"nonetheless"</em>, <em>"furthermore"</em>. Textos impecables que no corresponden a la oralidad del grupo.</p>
+    </div>
+    <div class="scene-card reveal reveal-delay-3">
+      <p class="scene-card-num">La Brecha</p>
+      <h3>El quiebre oral</h3>
+      <p>Al solicitar lecturas en voz alta, los alumnos no comprenden su propia entrega. Admiten haber usado ChatGPT o Google Translate para traducir desde el español.</p>
+    </div>
+    <div class="scene-card dark reveal reveal-delay-1">
+      <p class="scene-card-num">El Dato Clave</p>
+      <h3 style="color:var(--white)">Comprensión oral: 0%</h3>
+      <p>De su propia entrega escrita. Un texto sin errores técnicos pero vacío de asimilación subjetiva es un <strong style="color:var(--sky)">simulacro educativo</strong> que atenta contra el aprendizaje real.</p>
+    </div>
+  </div>
+
+  <div class="pullquote reveal">
+    <p>"La ilusión de la escritura perfecta: cuando un texto no tiene errores pero tampoco tiene dueño."</p>
+    <cite>Perspectiva propia · Cultura Digital · UMSA 2026</cite>
+  </div>
+
+  <div class="stat-row reveal">
+    <div class="stat-item">
+      <span class="stat-num">0%</span>
+      <span class="stat-label">comprensión oral de su propia entrega</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">100%</span>
+      <span class="stat-label">de los textos gramaticalmente correctos</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">∞</span>
+      <span class="stat-label">brecha entre lo escrito y lo apropiado</span>
+    </div>
+  </div>
+</div>
+</div>
+
+<hr class="divider">
+
+
+
+<!-- SECTION 2: DIALOGUE -->
+<div id="dialogue" class="dialogue-section">
+<div class="section-wrap">
+  <span class="section-badge reveal">Sección 02</span>
+  <h2 class="section-title reveal reveal-delay-1">Diálogo con los autores</h2>
+  <p class="section-lead reveal reveal-delay-2">
+    No se trata de resumir teoría. Se trata de usarla como lente crítica. ¿Qué le preguntaría cada autor a esta situación de aula?
+  </p>
+
+
+<div class="audio-card reveal reveal-delay-1">
+  <div class="audio-ep-badge">2</div>
+  <div class="audio-info">
+    <h4>Los marcos teóricos: Dussel y Scolari</h4>
+    <p>¿Qué dicen los autores sobre esta escena?</p>
+  </div>
+  <div class="audio-stack">
+    <audio controls>
+      <source src="https://res.cloudinary.com/djhitjptl/video/upload/v1780157663/part2_icot3r.mp4" type="audio/mp4">
+      Tu navegador no soporta audio HTML5.
+    </audio>
+  </div>
+</div>
+
+  <div class="author-tabs reveal">
+    <button class="author-tab active" onclick="showAuthor('dussel', this)">Dussel</button>
+    <button class="author-tab" onclick="showAuthor('scolari', this)">Scolari</button>
+    <button class="author-tab" onclick="showAuthor('castells', this)">Castells</button>
+    <button class="author-tab" onclick="showAuthor('tenti', this)">Tenti Fanfani</button>
+    <button class="author-tab" onclick="showAuthor('torres', this)">Torres & Solano</button>
+  </div>
+
+  <!-- DUSSEL -->
+  <div id="panel-dussel" class="author-panel active">
+    <div class="author-header">
+      <div class="author-avatar">ID</div>
+      <div class="author-bio">
+        <h3>Inés Dussel</h3>
+        <p class="author-field">Cultura Digital · Saberes · Formación Docente</p>
+        <p>Investigadora del CINVESTAV (México), doctora por la Universidad de Wisconsin-Madison. Estudia los vínculos entre la escuela y la cultura visual-digital. Recibió el Humboldt Research Award en 2018.</p>
+        <a href="https://www.cinvestav.mx/" target="_blank">→ CINVESTAV</a>
+      </div>
+    </div>
+    <div class="dialogue-thread">
+      <div class="dialogue-q">
+        <p class="dialogue-speaker">Juri · Gómez · Suárez preguntan</p>
+        <p>Inés, cuando un estudiante entrega un texto perfecto que no puede leer en voz alta, ¿estamos ante un problema de deshonestidad o ante una falla del ecosistema pedagógico?</p>
+      </div>
+      <div class="dialogue-a">
+        <p class="dialogue-speaker">Inés Dussel responde</p>
+        <p>Lo digital no es un medio instrumental: es un <strong>ecosistema que redefine qué saberes valen hoy</strong>. Si una interfaz resuelve la corrección de un texto de forma inmediata, la pregunta no es "¿copió?", sino: ¿qué sentido pedagógico tiene evaluar el inglés como mera memorización de estructuras sintácticas descontextualizadas? El estudiante no engañó al docente. Optimizó una consigna vacía.</p>
+      </div>
+      <div class="dialogue-q">
+        <p class="dialogue-speaker">Juri · Gómez · Suárez preguntan</p>
+        <p>¿Qué debería cambiar en la práctica docente para no reproducir ese simulacro?</p>
+      </div>
+      <div class="dialogue-a">
+        <p class="dialogue-speaker">Inés Dussel responde</p>
+        <p>La tarea del docente ya no es el <strong>control policial del plagio</strong>, sino guiar al estudiante a seleccionar, curar y habitar críticamente el idioma. El inglés circula hoy en entornos caóticos y sin fronteras físicas. La escuela debe aprender a enseñar en ese desorden, no contra él.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCOLARI -->
+  <div id="panel-scolari" class="author-panel">
+    <div class="author-header">
+      <div class="author-avatar">CS</div>
+      <div class="author-bio">
+        <h3>Carlos Scolari</h3>
+        <p class="author-field">Aprendizajes Informales · Transmedia · Juventudes</p>
+        <p>Doctor en Comunicación. Coordinó el proyecto Transmedia Literacy (2015–2018) con más de 30 investigadores de 8 países. Sus trabajos sobre lo que los jóvenes aprenden fuera de la escuela son referencia en América Latina.</p>
+        <a href="https://transmedialiteracy.org/" target="_blank">→ Transmedia Literacy Project</a>
+      </div>
+    </div>
+    <div class="dialogue-thread">
+      <div class="dialogue-q">
+        <p class="dialogue-speaker">Juri · Gómez · Suárez preguntan</p>
+        <p>Carlos, el estudiante que usó un prompt de traducción para resolver una tarea aburrida, ¿es un copiador o está desplegando una habilidad transmedia?</p>
+      </div>
+      <div class="dialogue-a">
+        <p class="dialogue-speaker">Carlos Scolari responde</p>
+        <p>Los jóvenes desarrollan estrategias complejas de remezcla y producción interactiva de manera informal. <strong>Usar un prompt es una competencia</strong>. La pregunta crítica es: ¿por qué la escuela llama "copia" a lo que podría potenciar la producción verbal? El copiar-pegar-traducir es una respuesta racional ante consignas sin propósito real.</p>
+      </div>
+      <div class="dialogue-q">
+        <p class="dialogue-speaker">Juri · Gómez · Suárez preguntan</p>
+        <p>¿Cómo se traduce eso en una propuesta pedagógica concreta?</p>
+      </div>
+      <div class="dialogue-a">
+        <p class="dialogue-speaker">Carlos Scolari responde</p>
+        <p>El inglés no se asimila rellenando espacios en papel. Se asimila <strong>produciendo narrativas interactivas y multimodales</strong>. La lógica del remix — apropiación y deconstrucción de producciones digitales — debería ser el corazón de la evaluación lingüística.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CASTELLS -->
+  <div id="panel-castells" class="author-panel">
+    <div class="author-header">
+      <div class="author-avatar">MC</div>
+      <div class="author-bio">
+        <h3>Manuel Castells</h3>
+        <p class="author-field">Sociedad Red · Poder · Identidad Digital</p>
+        <p>Sociólogo catalán, autor de la trilogía <em>La Era de la Información</em>. Su concepto de "sociedad red" y las transformaciones del poder en la era digital son ineludibles para pensar la educación contemporánea.</p>
+        <a href="https://www.manuelcastells.info/" target="_blank">→ manuelcastells.info</a>
+      </div>
+    </div>
+    <div class="dialogue-thread">
+      <div class="dialogue-q">
+        <p class="dialogue-speaker">Juri · Gómez · Suárez preguntan</p>
+        <p>Manuel, ¿qué significa para la identidad lingüística de un joven apropiarse del inglés en la sociedad red?</p>
+      </div>
+      <div class="dialogue-a">
+        <p class="dialogue-speaker">Manuel Castells responde</p>
+        <p>En la sociedad red, el poder pasa por el control de los <strong>flujos de información</strong>. Un estudiante que aprende a formular un prompt eficiente en inglés está aprendiendo a operar en las redes de poder del siglo XXI. La pregunta pedagógica es cómo convertir esa habilidad en identidad comunicativa genuina.</p>
+      </div>
+      <div class="dialogue-q">
+        <p class="dialogue-speaker">Juri · Gómez · Suárez preguntan</p>
+        <p>¿Qué riesgo existe en que esa apropiación quede solo en el nivel instrumental?</p>
+      </div>
+      <div class="dialogue-a">
+        <p class="dialogue-speaker">Manuel Castells responde</p>
+        <p>El riesgo es la <strong>exclusión comunicativa</strong>. Quienes no desarrollen una voz propia en inglés quedarán fuera de los nodos de producción cultural global. La escuela que no enseña a comunicar críticamente reproduce desigualdad, aunque use las mejores tecnologías.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- TENTI FANFANI -->
+  <div id="panel-tenti" class="author-panel">
+    <div class="author-header">
+      <div class="author-avatar">TF</div>
+      <div class="author-bio">
+        <h3>Emilio Tenti Fanfani</h3>
+        <p class="author-field">Escuela Post-pandemia · Condición Docente · Sentido</p>
+        <p>Sociólogo argentino, investigador del IIPE-UNESCO y la UBA. Sus trabajos sobre la condición docente y el sentido de la escolarización en la Argentina contemporánea son de referencia ineludible.</p>
+        <a href="https://www.iipe-buenosaires.org.ar/" target="_blank">→ IIPE-UNESCO Buenos Aires</a>
+      </div>
+    </div>
+    <div class="dialogue-thread">
+      <div class="dialogue-q">
+        <p class="dialogue-speaker">Juri · Gómez · Suárez preguntan</p>
+        <p>Emilio, ¿tiene sentido la escolarización cuando la IA puede producir en segundos lo que llevaría semanas de aprendizaje?</p>
+      </div>
+      <div class="dialogue-a">
+        <p class="dialogue-speaker">Emilio Tenti Fanfani responde</p>
+        <p>La escuela perdió el monopolio del conocimiento hace tiempo. Pero no perdió su función de <strong>socialización y construcción de sentido</strong>. El problema no es la IA: es que muchas consignas carecen de propósito real. Cuando el estudiante no puede distinguir su producción de la del algoritmo, la escuela falló en algo más profundo que la tecnología.</p>
+      </div>
+      <div class="dialogue-q">
+        <p class="dialogue-speaker">Juri · Gómez · Suárez preguntan</p>
+        <p>¿Cómo recupera el docente su autoridad pedagógica en ese contexto?</p>
+      </div>
+      <div class="dialogue-a">
+        <p class="dialogue-speaker">Emilio Tenti Fanfani responde</p>
+        <p>La autoridad docente hoy viene de la <strong>capacidad de problematizar</strong>. Un docente que diseña situaciones donde la IA es herramienta y no atajo tiene más autoridad que uno que la prohíbe. La prohibición es una respuesta de pánico. La integración crítica es una respuesta pedagógica.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- TORRES & SOLANO -->
+  <div id="panel-torres" class="author-panel">
+    <div class="author-header">
+      <div class="author-avatar">TS</div>
+      <div class="author-bio">
+        <h3>Torres & Solano</h3>
+        <p class="author-field">IA en Políticas Públicas · Abandono Escolar · SAT</p>
+        <p>Investigadoras de CIPPEC. Su trabajo sobre los Sistemas de Alerta Temprana (SAT) en Argentina documenta el uso de IA al servicio de la retención educativa. En Mendoza, 4.500 estudiantes en riesgo continuaron sus estudios.</p>
+        <a href="https://www.cippec.org/" target="_blank">→ CIPPEC Argentina</a>
+      </div>
+    </div>
+    <div class="dialogue-thread">
+      <div class="dialogue-q">
+        <p class="dialogue-speaker">Juri · Gómez · Suárez preguntan</p>
+        <p>¿Qué nos dice la experiencia de los SAT provinciales sobre el potencial de la IA como aliada del aprendizaje?</p>
+      </div>
+      <div class="dialogue-a">
+        <p class="dialogue-speaker">Torres & Solano responden</p>
+        <p>En Mendoza 2023, los SAT permitieron que 4.500 estudiantes con riesgo alto de abandono continuaran sus estudios. La IA <strong>no reemplaza al docente: lo potencia</strong>. Le da información que antes no tenía. El mismo principio aplica al aula de inglés: la IA puede amplificar la capacidad del docente para personalizar el aprendizaje.</p>
+      </div>
+      <div class="dialogue-q">
+        <p class="dialogue-speaker">Juri · Gómez · Suárez preguntan</p>
+        <p>¿Qué condiciones necesita una escuela para que esa integración sea efectiva?</p>
+      </div>
+      <div class="dialogue-a">
+        <p class="dialogue-speaker">Torres & Solano responden</p>
+        <p>Tres condiciones: <strong>datos de calidad</strong>, docentes con literacidad digital real, y liderazgo institucional que no trate a la IA como amenaza. Argentina está 4° en el Índice Latinoamericano de IA. Tenemos condiciones. Lo que falta es voluntad pedagógica para integrarla críticamente.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<hr class="divider">
+
+<!-- VIDEO -->
+<div style="padding: 4rem 3rem; background: var(--dark);">
+  <div style="max-width:1200px; margin:0 auto;">
+    <span class="section-badge reveal">Material de referencia</span>
+    <h2 class="section-title reveal reveal-delay-1">IA y educación: el contexto global</h2>
+    <div class="video-wrap reveal">
+      <iframe src="https://www.youtube.com/embed/hJP5GqnTrNo" title="IA en la educación" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>
+    <p class="video-caption">Referencia: debate sobre IA y enseñanza de lenguas extranjeras en el contexto latinoamericano.</p>
+  </div>
+</div>
+
+<!-- SECTION 3: PROPOSAL -->
+<div id="proposal" style="background: var(--darker);">
+<div class="section-wrap">
+  <span class="section-badge reveal">Sección 03</span>
+  <h2 class="section-title reveal reveal-delay-1">La propuesta pedagógica</h2>
+  <p class="section-lead reveal reveal-delay-2">
+    <em>The AI as a Co-Writer</em>: una secuencia didáctica para apropiarse del idioma usando la IA como herramienta de edición crítica, no como atajo.
+  </p>
+
+<!-- AUDIO SECTION -->
+ 
+
+
+<div class="audio-card reveal reveal-delay-2">
+  <div class="audio-ep-badge">3</div>
+  <div class="audio-info">
+    <h4>La propuesta: The AI as a Co-Writer</h4>
+    <p>Secuencia didáctica y evaluación del proceso</p>
+  </div>
+  <div class="audio-stack">
+    <audio controls>
+      <source src="https://res.cloudinary.com/djhitjptl/video/upload/v1780157670/part3_ph2sby.mp4" type="audio/mp4">
+      Tu navegador no soporta audio HTML5.
+    </audio>
+  </div>
+</div>
+
+  <div class="steps-container">
+    <div class="step reveal">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <span class="step-tag">Generar</span>
+        <h3>Uso guiado de IA para primer borrador</h3>
+        <p>Los estudiantes usan ChatGPT o DeepL para redactar un primer borrador. La consigna no prohíbe la IA: la hace visible y la convierte en material pedagógico.</p>
+      </div>
+    </div>
+    <div class="step reveal">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <span class="step-tag">Editar</span>
+        <h3>Edición colaborativa y apropiación léxica</h3>
+        <p>En parejas, identifican errores semánticos y adaptan el texto a una voz adolescente. Reemplazan estructuras rígidas por modismos acordes al nivel. El texto empieza a tener dueño.</p>
+      </div>
+    </div>
+    <div class="step reveal">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <span class="step-tag">Actuar</span>
+        <h3>Podcast de juego de rol en inglés</h3>
+        <p>Graban un audio informal usando exclusivamente las frases que refinaron. Ponen el cuerpo al idioma. La grabación demuestra apropiación real.</p>
+      </div>
+    </div>
+    <div class="step reveal">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <span class="step-tag">Reflexionar</span>
+        <h3>Debate sobre sesgos algorítmicos</h3>
+        <p>Intercambio grupal sobre las diferencias de matiz comunicativo que el software no pudo detectar. La literacidad digital nace del análisis crítico, no de la prohibición.</p>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" style="margin: 3rem 0;">
+  <h3 style="font-family: var(--display); font-size: 1.4rem; font-weight: 800; margin-bottom: 1.5rem; color: var(--white);" class="reveal">Matriz de evaluación de procesos</h3>
+  <div class="reveal" style="overflow-x:auto;">
+    <table class="eval-table">
+      <thead>
+        <tr>
+          <th>Dimensión evaluada</th>
+          <th>Criterio pedagógico</th>
+          <th>Indicador de logro</th>
+          <th>Tipo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Intervención tecnológica</strong></td>
+          <td>Uso y modificación del software</td>
+          <td>Capacidad de refinar prompts y detectar inconsistencias en la traducción original de la IA.</td>
+          <td><span class="eval-pill">Proceso</span></td>
+        </tr>
+        <tr>
+          <td><strong>Apropiación lingüística</strong></td>
+          <td>Edición léxica y adecuación</td>
+          <td>Reemplazo autónomo de estructuras rígidas por modismos acordes al nivel de habla esperado.</td>
+          <td><span class="eval-pill">Léxico</span></td>
+        </tr>
+        <tr>
+          <td><strong>Sujeto comunicador</strong></td>
+          <td>Vocalización y fluidez real</td>
+          <td>Desempeño en el producto de audio final, demostrando dominio semántico real del vocabulario editado.</td>
+          <td><span class="eval-pill">Oral</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <hr class="divider" style="margin: 4rem 0 2.5rem;">
+  <span class="section-badge reveal">Lecturas de referencia</span>
+  <div class="ref-grid reveal">
+    <a href="https://www.revistaanfibia.com/lo-aprendi-en-un-tutorial/" target="_blank" class="ref-card">
+      <p class="ref-card-label">Scolari · Anfibia</p>
+      <h4>"Lo aprendí en un tutorial"</h4>
+      <p>Transmedia Literacy y competencias informales de los jóvenes</p>
+      <span class="arrow">→ Leer</span>
+    </a>
+    <a href="https://www.cinvestav.mx/" target="_blank" class="ref-card">
+      <p class="ref-card-label">Dussel · CINVESTAV</p>
+      <h4>La formación docente y la cultura digital</h4>
+      <p>Métodos y saberes en una nueva época</p>
+      <span class="arrow">→ Ver fuente</span>
+    </a>
+    <a href="https://www.cippec.org/" target="_blank" class="ref-card">
+      <p class="ref-card-label">Torres & Solano · CIPPEC</p>
+      <h4>IA aliada contra el abandono escolar</h4>
+      <p>SAT en provincias argentinas</p>
+      <span class="arrow">→ Ver investigación</span>
+    </a>
+    <a href="https://transmedialiteracy.org/" target="_blank" class="ref-card">
+      <p class="ref-card-label">Proyecto internacional</p>
+      <h4>Transmedia Literacy</h4>
+      <p>30 investigadores · 8 países · 3 años</p>
+      <span class="arrow">→ Explorar</span>
+    </a>
+  </div>
+</div>
+</div>
+
+<!-- CONCLUSION -->
+<div id="conclusion">
+  <div class="blob-c"></div>
+  <div class="inner">
+    <p class="conclusion-quote">
+      "La tecnología no atenta contra el aprendizaje del idioma;<br>
+      atenta contra <span>la consigna vacía.</span><br>
+      La IA nos exige dejar de enseñar a traducir<br>
+      y empezar a enseñar a <span>comunicar críticamente.</span>"
+    </p>
+    <p class="conclusion-attribution">Perspectiva propia · Cultura Digital · UMSA 2026</p>
+    <div class="conclusion-authors">
+      <span class="conclusion-author">Javier Juri</span>
+      <span class="conclusion-author">Natalia Gómez</span>
+      <span class="conclusion-author">Yanina Suárez</span>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>
+    Profesorado de Inglés · UMSA 2026 · Materia: Cultura Digital &nbsp;·&nbsp;
+    Dussel · Scolari · Castells · Tenti Fanfani · Torres & Solano &nbsp;·&nbsp;
+    <a href="https://drive.google.com/drive/folders/1fUYSb29MDx4RGRNEEQfKlLSwl4-fgKzW" target="_blank">Material fuente en Drive</a>
+  </p>
+</footer>
+
+<script>
+  window.addEventListener('scroll', () => {
+    const p = window.scrollY / (document.body.offsetHeight - window.innerHeight) * 100;
+    document.getElementById('progress-bar').style.width = Math.min(p, 100) + '%';
+  });
+
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+  function showAuthor(id, btn) {
+    document.querySelectorAll('.author-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.author-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('panel-' + id).classList.add('active');
+    btn.classList.add('active');
+  }
+</script>
+</body>
+</html>
