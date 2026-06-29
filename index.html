@@ -1,0 +1,2079 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE LAST SIGNAL — Base Meridian Escape Room</title>
+<style>
+  :root {
+    --bg-primary: #0a0e1a;
+    --bg-panel: #0f1729;
+    --bg-card: #141e35;
+    --bg-input: #1a2540;
+    --accent-cyan: #00d4ff;
+    --accent-green: #00ff9d;
+    --accent-amber: #ffb800;
+    --accent-red: #ff3a3a;
+    --accent-purple: #a855f7;
+    --text-primary: #e8f4f8;
+    --text-secondary: #8ca8c0;
+    --text-dim: #4a6580;
+    --border: #1e3050;
+    --border-glow: rgba(0,212,255,0.3);
+    --shadow-glow: 0 0 20px rgba(0,212,255,0.15);
+    --font-display: 'Courier New', 'Courier', monospace;
+    --font-body: -apple-system, 'Segoe UI', Arial, sans-serif;
+    --radius: 8px;
+    --radius-sm: 4px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(0,212,255,0.04) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(168,85,247,0.04) 0%, transparent 50%);
+  }
+
+  /* SKIP LINK */
+  .skip-link {
+    position: absolute;
+    top: -100px;
+    left: 1rem;
+    background: var(--accent-cyan);
+    color: var(--bg-primary);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius);
+    font-weight: 700;
+    z-index: 9999;
+    transition: top 0.2s;
+  }
+  .skip-link:focus { top: 1rem; }
+
+  /* HEADER */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10,14,26,0.95);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .signal-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent-green);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%,100% { opacity:1; box-shadow: 0 0 0 0 rgba(0,255,157,0.4); }
+    50% { opacity:0.7; box-shadow: 0 0 0 6px rgba(0,255,157,0); }
+  }
+
+  .brand-name {
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: var(--accent-cyan);
+    text-transform: uppercase;
+  }
+
+  .hud {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .hud-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.25rem 0.75rem;
+    min-width: 70px;
+  }
+
+  .hud-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-family: var(--font-display);
+  }
+
+  .hud-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    font-family: var(--font-display);
+    color: var(--accent-cyan);
+  }
+
+  .hud-value.green { color: var(--accent-green); }
+  .hud-value.amber { color: var(--accent-amber); }
+
+  /* HIGH CONTRAST TOGGLE */
+  .a11y-btn {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    border-radius: var(--radius-sm);
+    padding: 0.35rem 0.75rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: all 0.2s;
+  }
+  .a11y-btn:hover, .a11y-btn:focus {
+    border-color: var(--accent-cyan);
+    color: var(--accent-cyan);
+    outline: 2px solid var(--accent-cyan);
+    outline-offset: 2px;
+  }
+
+  /* HIGH CONTRAST MODE */
+  body.high-contrast {
+    --bg-primary: #000000;
+    --bg-panel: #0a0a0a;
+    --bg-card: #111111;
+    --bg-input: #1a1a1a;
+    --accent-cyan: #00ffff;
+    --accent-green: #00ff00;
+    --accent-amber: #ffff00;
+    --accent-red: #ff4444;
+    --text-primary: #ffffff;
+    --text-secondary: #dddddd;
+    --border: #444444;
+  }
+
+  /* MAIN LAYOUT */
+  main {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 1.5rem 1rem 4rem;
+  }
+
+  /* SCREENS */
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadeIn 0.4s ease; }
+
+  @keyframes fadeIn {
+    from { opacity:0; transform:translateY(8px); }
+    to { opacity:1; transform:translateY(0); }
+  }
+
+  /* HERO — WELCOME SCREEN */
+  .hero {
+    text-align: center;
+    padding: 3rem 1rem 2rem;
+  }
+
+  .hero-pre {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    letter-spacing: 0.3em;
+    color: var(--accent-cyan);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+
+  .hero-title {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 8vw, 3.5rem);
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: 0.05em;
+    line-height: 1.1;
+    margin-bottom: 0.5rem;
+  }
+
+  .hero-title span { color: var(--accent-cyan); }
+
+  .hero-subtitle {
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    letter-spacing: 0.15em;
+    margin-bottom: 2.5rem;
+  }
+
+  /* ARIA TERMINAL */
+  .aria-terminal {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    box-shadow: var(--shadow-glow);
+  }
+
+  .aria-terminal::before {
+    content: 'ARIA — SYSTEM MESSAGE';
+    position: absolute;
+    top: -0.6rem;
+    left: 1rem;
+    background: var(--bg-primary);
+    padding: 0 0.5rem;
+    font-family: var(--font-display);
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    color: var(--accent-cyan);
+  }
+
+  .aria-text {
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: var(--text-primary);
+  }
+
+  .aria-text .cursor {
+    display: inline-block;
+    width: 8px;
+    height: 14px;
+    background: var(--accent-cyan);
+    vertical-align: text-bottom;
+    margin-left: 2px;
+    animation: blink 1s step-end infinite;
+  }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  /* MISSION BRIEF CARD */
+  .brief-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent-amber);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .brief-card h3 {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    color: var(--accent-amber);
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+
+  .brief-card p, .brief-card li {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.4rem;
+  }
+
+  .brief-card ul { padding-left: 1.25rem; }
+
+  /* AGENT FORM */
+  .form-group {
+    margin-bottom: 1.25rem;
+  }
+
+  .form-group label {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .form-group input, .form-group select {
+    width: 100%;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.65rem 0.9rem;
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    transition: border-color 0.2s;
+  }
+
+  .form-group input:focus, .form-group select:focus {
+    outline: 2px solid var(--accent-cyan);
+    outline-offset: 2px;
+    border-color: var(--accent-cyan);
+  }
+
+  .form-group select option { background: var(--bg-card); }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+    font-weight: 700;
+    font-family: var(--font-display);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn:focus {
+    outline: 3px solid var(--accent-cyan);
+    outline-offset: 3px;
+  }
+
+  .btn-primary {
+    background: var(--accent-cyan);
+    color: var(--bg-primary);
+  }
+  .btn-primary:hover { background: #33ddff; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(0,212,255,0.3); }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--accent-cyan);
+    border: 1px solid var(--accent-cyan);
+  }
+  .btn-secondary:hover { background: rgba(0,212,255,0.1); }
+
+  .btn-route-a {
+    background: rgba(0,255,157,0.1);
+    color: var(--accent-green);
+    border: 1px solid var(--accent-green);
+    width: 100%;
+    margin-bottom: 0.75rem;
+    justify-content: center;
+    padding: 1rem;
+  }
+  .btn-route-a:hover { background: rgba(0,255,157,0.2); }
+
+  .btn-route-b {
+    background: rgba(168,85,247,0.1);
+    color: var(--accent-purple);
+    border: 1px solid var(--accent-purple);
+    width: 100%;
+    justify-content: center;
+    padding: 1rem;
+  }
+  .btn-route-b:hover { background: rgba(168,85,247,0.2); }
+
+  .btn-danger {
+    background: rgba(255,58,58,0.1);
+    color: var(--accent-red);
+    border: 1px solid var(--accent-red);
+  }
+  .btn-danger:hover { background: rgba(255,58,58,0.2); }
+
+  .btn-full { width: 100%; justify-content: center; }
+  .btn-sm { padding: 0.4rem 0.9rem; font-size: 0.8rem; }
+
+  /* SECTION HEADERS */
+  .scene-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .scene-number {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    background: var(--accent-cyan);
+    color: var(--bg-primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+
+  .scene-meta { flex: 1; }
+
+  .scene-act {
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
+  }
+
+  .scene-title {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    color: var(--text-primary);
+    font-weight: 700;
+  }
+
+  /* PUZZLE CONTAINERS */
+  .puzzle-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    box-shadow: var(--shadow-glow);
+  }
+
+  .puzzle-card h3 {
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    letter-spacing: 0.15em;
+    color: var(--accent-amber);
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .narrative-text {
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: var(--bg-card);
+    border-radius: var(--radius-sm);
+    border-left: 2px solid var(--accent-cyan);
+  }
+
+  /* SELECT DROPDOWN PUZZLES */
+  .fill-blank {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    line-height: 2.2;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+  }
+
+  .fill-blank select {
+    background: var(--bg-input);
+    border: 1px solid var(--accent-amber);
+    border-radius: var(--radius-sm);
+    color: var(--accent-amber);
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    padding: 0.2rem 0.4rem;
+    cursor: pointer;
+  }
+
+  .fill-blank select:focus {
+    outline: 2px solid var(--accent-cyan);
+  }
+
+  /* ORDERING PUZZLE */
+  .order-list {
+    list-style: none;
+    margin-bottom: 1rem;
+  }
+
+  .order-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .order-item select {
+    flex-shrink: 0;
+    width: 70px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-family: var(--font-display);
+    padding: 0.3rem 0.4rem;
+  }
+
+  .order-item select:focus { outline: 2px solid var(--accent-cyan); }
+
+  .order-item-text {
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+
+  /* RADIO / MULTI CHOICE */
+  .choice-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+  }
+
+  .choice-item label {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+  }
+
+  .choice-item label:hover { border-color: var(--accent-cyan); }
+  .choice-item input[type="radio"] { margin-top: 3px; accent-color: var(--accent-cyan); width: 16px; height: 16px; flex-shrink: 0; }
+  .choice-item input[type="radio"]:focus-visible + span { text-decoration: underline; }
+
+  /* MAP PUZZLE */
+  .sector-grid {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .sector-btn {
+    aspect-ratio: 1;
+    background: var(--bg-card);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    transition: all 0.2s;
+    font-family: var(--font-display);
+  }
+
+  .sector-btn:focus { outline: 3px solid var(--accent-cyan); }
+  .sector-btn .sector-name { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); }
+  .sector-btn .sector-status { font-size: 0.65rem; letter-spacing: 0.1em; }
+
+  .sector-btn.operational { border-color: var(--accent-green); }
+  .sector-btn.operational .sector-status { color: var(--accent-green); }
+  .sector-btn.offline { border-color: var(--accent-red); opacity:0.6; }
+  .sector-btn.offline .sector-status { color: var(--accent-red); }
+  .sector-btn.malfunction { border-color: var(--accent-amber); }
+  .sector-btn.malfunction .sector-status { color: var(--accent-amber); }
+  .sector-btn.selected { box-shadow: 0 0 0 3px var(--accent-cyan); }
+
+  /* READING COMPREHENSION */
+  .reading-passage {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 1rem 1.25rem;
+    font-size: 0.9rem;
+    line-height: 1.8;
+    margin-bottom: 1.25rem;
+    font-family: var(--font-display);
+    color: var(--text-secondary);
+  }
+
+  .reading-passage em { color: var(--accent-cyan); font-style: normal; }
+
+  .question-block { margin-bottom: 1rem; }
+  .question-block p {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+  }
+
+  /* FEEDBACK */
+  .feedback-box {
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    margin-top: 1rem;
+    display: none;
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+  .feedback-box.success {
+    display: block;
+    background: rgba(0,255,157,0.08);
+    border: 1px solid var(--accent-green);
+    color: var(--accent-green);
+  }
+
+  .feedback-box.error {
+    display: block;
+    background: rgba(255,58,58,0.08);
+    border: 1px solid var(--accent-red);
+    color: var(--accent-red);
+  }
+
+  .feedback-box.info {
+    display: block;
+    background: rgba(0,212,255,0.08);
+    border: 1px solid var(--accent-cyan);
+    color: var(--accent-cyan);
+  }
+
+  /* PROGRESS BAR */
+  .progress-wrap {
+    margin-bottom: 1.5rem;
+  }
+
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+
+  .progress-bar {
+    height: 6px;
+    background: var(--bg-card);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-cyan), var(--accent-green));
+    border-radius: 3px;
+    transition: width 0.5s ease;
+  }
+
+  /* ROUTE CHOICE */
+  .route-choice-section {
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .route-choice-section h3 {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+
+  /* BADGE DISPLAY */
+  .badge-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+
+  .badge {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 0.3rem 0.8rem;
+    font-size: 0.8rem;
+    font-family: var(--font-display);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--text-secondary);
+    transition: all 0.3s;
+  }
+
+  .badge.earned {
+    border-color: var(--accent-amber);
+    color: var(--accent-amber);
+    background: rgba(255,184,0,0.08);
+  }
+
+  /* LEVEL DISPLAY */
+  .level-block {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .level-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+  }
+
+  .level-info { flex: 1; }
+  .level-name {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent-amber);
+    margin-bottom: 0.2rem;
+  }
+  .level-desc { font-size: 0.8rem; color: var(--text-secondary); }
+
+  /* FINAL SCREENS */
+  .final-banner {
+    text-align: center;
+    padding: 2rem 1rem;
+  }
+
+  .final-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+
+  .final-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 6vw, 2.5rem);
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .final-title.success { color: var(--accent-green); }
+  .final-title.partial { color: var(--accent-amber); }
+  .final-title.redirect { color: var(--accent-purple); }
+
+  .final-score-display {
+    font-family: var(--font-display);
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--accent-cyan);
+    margin: 1rem 0;
+  }
+
+  .final-narrative {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    margin: 1.5rem 0;
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    line-height: 1.8;
+    color: var(--text-secondary);
+    text-align: left;
+  }
+
+  .final-narrative em { color: var(--text-primary); font-style: italic; }
+
+  /* STATS GRID */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 0.75rem;
+    margin: 1rem 0;
+  }
+
+  .stat-cell {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.75rem;
+    text-align: center;
+  }
+
+  .stat-cell .stat-val {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent-cyan);
+  }
+
+  .stat-cell .stat-name {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* HINT BUTTON */
+  .hint-wrap {
+    margin-top: 0.75rem;
+  }
+
+  .hint-text {
+    margin-top: 0.5rem;
+    padding: 0.75rem;
+    background: rgba(255,184,0,0.06);
+    border: 1px solid rgba(255,184,0,0.3);
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    color: var(--accent-amber);
+    font-family: var(--font-display);
+    display: none;
+  }
+
+  .hint-text.visible { display: block; }
+
+  /* DIVIDER */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 1.5rem 0;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 480px) {
+    header { padding: 0.6rem 1rem; }
+    .hud { gap: 0.5rem; }
+    .hud-stat { min-width: 55px; padding: 0.2rem 0.5rem; }
+    .hud-value { font-size: 0.95rem; }
+    main { padding: 1rem 0.75rem 3rem; }
+    .sector-grid { grid-template-columns: repeat(3,1fr); gap: 0.35rem; }
+    .sector-btn .sector-name { font-size: 0.95rem; }
+  }
+
+  /* TRANSITION CLASSES */
+  .hidden { display: none !important; }
+  .visible { display: block !important; }
+
+  /* ICON HELPERS */
+  .icon { font-style: normal; font-size: 1.1em; line-height: 1; }
+
+  /* TRANSCRIPT BOX */
+  .transcript-box {
+    background: var(--bg-card);
+    border: 1px solid rgba(0,212,255,0.2);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .transcript-box .tx-label {
+    font-family: var(--font-display);
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    color: var(--accent-cyan);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .transcript-box p {
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-style: italic;
+    line-height: 1.7;
+  }
+
+  /* SYNC SESSION INFO */
+  .sync-card {
+    background: linear-gradient(135deg, rgba(168,85,247,0.08), rgba(0,212,255,0.05));
+    border: 1px solid rgba(168,85,247,0.3);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .sync-card h3 {
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    letter-spacing: 0.15em;
+    color: var(--accent-purple);
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+
+  .role-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+
+  .role-chip {
+    background: rgba(168,85,247,0.1);
+    border: 1px solid rgba(168,85,247,0.3);
+    border-radius: 20px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.8rem;
+    font-family: var(--font-display);
+    color: var(--accent-purple);
+  }
+
+  /* SCROLLABLE AREA for reading */
+  .scroll-passage {
+    max-height: 200px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-cyan) var(--bg-card);
+  }
+</style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<!-- HEADER HUD -->
+<header role="banner">
+  <div class="header-brand">
+    <div class="signal-dot" aria-hidden="true"></div>
+    <span class="brand-name">BASE MERIDIAN</span>
+  </div>
+  <div class="hud" role="status" aria-live="polite" aria-label="Mission status">
+    <div class="hud-stat">
+      <span class="hud-label">Points</span>
+      <span class="hud-value" id="hud-points">0</span>
+    </div>
+    <div class="hud-stat">
+      <span class="hud-label">Level</span>
+      <span class="hud-value green" id="hud-level">1</span>
+    </div>
+    <div class="hud-stat">
+      <span class="hud-label">Act</span>
+      <span class="hud-value amber" id="hud-act">—</span>
+    </div>
+  </div>
+  <button class="a11y-btn" onclick="toggleContrast()" aria-pressed="false" id="contrast-btn" title="Toggle high contrast mode">
+    ◑ Contrast
+  </button>
+</header>
+
+<main id="main-content" role="main">
+
+  <!-- ======================== SCREEN 0: WELCOME ======================== -->
+  <section class="screen active" id="screen-welcome" aria-label="Welcome screen">
+    <div class="hero">
+      <p class="hero-pre">⚡ Classified Mission // Antarctic Research Station</p>
+      <h1 class="hero-title">THE LAST<br><span>SIGNAL</span></h1>
+      <p class="hero-subtitle">BASE MERIDIAN — ESCAPE ROOM</p>
+    </div>
+
+    <div class="aria-terminal" role="complementary" aria-label="ARIA system message">
+      <p class="aria-text" id="aria-intro-text">WELCOME, AGENT. I am ARIA — Automated Research Intelligence Assistant. My systems are at <strong style="color:var(--accent-amber)">43% capacity</strong>. Base Meridian has lost contact with the outside world. I need your help to restore the signal. Read carefully. Every decision matters. Are you ready to begin?<span class="cursor" aria-hidden="true"></span></p>
+    </div>
+
+    <div class="transcript-box">
+      <div class="tx-label">📻 Audio Transcript — Episode 0 — Dr. Elena Voss</div>
+      <p>"This is Dr. Elena Voss, Base Meridian, Antarctica. If you're receiving this… our main transmitter is down. The temperature is dropping. We have limited power. I've left instructions in the system — ARIA will guide you. But you need to understand the codes. You need to understand <em>us</em>. Please. Find the signal. Bring us home."</p>
+    </div>
+
+    <div class="brief-card">
+      <h3>📋 Mission Briefing</h3>
+      <ul>
+        <li>Solve 4 puzzles to restore Base Meridian's signal</li>
+        <li>Every correct answer earns points. Wrong answers cost points</li>
+        <li>You'll choose your own route in Act I</li>
+        <li>Your score determines the ending</li>
+        <li><strong>Max score: 150 points</strong></li>
+      </ul>
+    </div>
+
+    <div class="form-group">
+      <label for="agent-name">Agent Name (your first name)</label>
+      <input type="text" id="agent-name" placeholder="Enter your name..." autocomplete="given-name">
+    </div>
+    <div class="form-group">
+      <label for="agent-role">Your Team Role</label>
+      <select id="agent-role">
+        <option value="">— Select your role —</option>
+        <option value="Navigator">🧭 Navigator — presents mission summary</option>
+        <option value="Codebreaker">🔑 Codebreaker — solves technical puzzles</option>
+        <option value="Communicator">📡 Communicator — proposes strategies</option>
+        <option value="Timekeeper">⏱ Timekeeper — manages the team</option>
+      </select>
+    </div>
+
+    <button class="btn btn-primary btn-full" onclick="startMission()" style="margin-top:0.5rem">
+      ▶ BEGIN MISSION
+    </button>
+  </section>
+
+  <!-- ======================== SCREEN 1: PUZZLE 1 ======================== -->
+  <section class="screen" id="screen-p1" aria-label="Act I — Puzzle 1">
+
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span>Mission Progress</span>
+        <span>1 / 4 Puzzles</span>
+      </div>
+      <div class="progress-bar" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100" aria-label="25% complete">
+        <div class="progress-fill" style="width:25%"></div>
+      </div>
+    </div>
+
+    <div class="scene-header">
+      <div class="scene-number" aria-hidden="true">1</div>
+      <div class="scene-meta">
+        <p class="scene-act">Act I — The Broken Frequency</p>
+        <h2 class="scene-title">Puzzle 1: The Broken Message</h2>
+      </div>
+    </div>
+
+    <div class="puzzle-card">
+      <h3>🔧 Mission Task</h3>
+      <div class="narrative-text">
+        ARIA has recovered a fragmented message from Dr. Voss. Critical words are missing. Use your knowledge of the base vocabulary to reconstruct the message correctly. Choose the right word from each dropdown.
+      </div>
+
+      <div class="fill-blank" id="fill-blank-puzzle" aria-label="Fill in the blanks puzzle">
+        <p>"The main generator is in
+          <select id="blank1" aria-label="First blank">
+            <option value="">___</option>
+            <option value="sector">sector</option>
+            <option value="signal">signal</option>
+            <option value="station">station</option>
+          </select>
+          B. To restart it, you must press the red
+          <select id="blank2" aria-label="Second blank">
+            <option value="">___</option>
+            <option value="button">button</option>
+            <option value="battery">battery</option>
+            <option value="broadcast">broadcast</option>
+          </select>
+          and wait for the frequency to
+          <select id="blank3" aria-label="Third blank">
+            <option value="">___</option>
+            <option value="stabilize">stabilize</option>
+            <option value="silence">silence</option>
+            <option value="signal">signal</option>
+          </select>.
+          Warning: do not
+          <select id="blank4" aria-label="Fourth blank">
+            <option value="">___</option>
+            <option value="touch">touch</option>
+            <option value="transmit">transmit</option>
+            <option value="try">try</option>
+          </select>
+          the yellow cables."
+        </p>
+      </div>
+
+      <div class="hint-wrap">
+        <button class="btn btn-secondary btn-sm" onclick="showHint('hint1')" aria-expanded="false" id="hint1-btn">
+          💡 Request ARIA Hint (-5 pts)
+        </button>
+        <div class="hint-text" id="hint1" role="alert">
+          ARIA: "Think about physical locations, objects you press, processes that reach balance, and safety instructions about physical contact."
+        </div>
+      </div>
+
+      <div id="p1-feedback" class="feedback-box" role="alert" aria-live="assertive"></div>
+
+      <div style="margin-top:1rem">
+        <button class="btn btn-primary" onclick="checkPuzzle1()">
+          ✓ Submit Answer
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================== SCREEN 2: ROUTE CHOICE ======================== -->
+  <section class="screen" id="screen-route" aria-label="Route selection">
+
+    <div class="scene-header">
+      <div class="scene-number" aria-hidden="true">→</div>
+      <div class="scene-meta">
+        <p class="scene-act">Act I — Decision Point</p>
+        <h2 class="scene-title">Puzzle 2: Choose Your Path</h2>
+      </div>
+    </div>
+
+    <div class="aria-terminal">
+      <p class="aria-text">ARIA: "Two critical systems need attention simultaneously. You must choose which one to prioritize. Choose wisely — the route determines the type of challenge ahead."<span class="cursor" aria-hidden="true"></span></p>
+    </div>
+
+    <div class="puzzle-card">
+      <h3>⚡ PRIORITY SELECTION</h3>
+      <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:1.25rem">Which system do you prioritize for repair?</p>
+
+      <button class="btn btn-route-a" onclick="chooseRoute('A')" aria-label="Route A: Power Generator - focus on imperative sentences">
+        <div style="text-align:left">
+          <div style="font-size:1.1rem;margin-bottom:0.3rem">⚡ Route A: Power Generator</div>
+          <div style="font-size:0.8rem;opacity:0.8">Restore electrical systems — requires technical sequencing skills</div>
+        </div>
+      </button>
+
+      <button class="btn btn-route-b" onclick="chooseRoute('B')" aria-label="Route B: Communication Array - focus on modal verbs">
+        <div style="text-align:left">
+          <div style="font-size:1.1rem;margin-bottom:0.3rem">📡 Route B: Communication Array</div>
+          <div style="font-size:0.8rem;opacity:0.8">Restore the transmitter — requires linguistic analysis skills</div>
+        </div>
+      </button>
+    </div>
+  </section>
+
+  <!-- ======================== SCREEN 3A: ROUTE A — ORDERING ======================== -->
+  <section class="screen" id="screen-p2a" aria-label="Act I — Route A — Generator Protocol">
+
+    <div class="progress-wrap">
+      <div class="progress-label"><span>Mission Progress</span><span>2 / 4 Puzzles</span></div>
+      <div class="progress-bar" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" aria-label="50% complete">
+        <div class="progress-fill" style="width:50%"></div>
+      </div>
+    </div>
+
+    <div class="scene-header">
+      <div class="scene-number" aria-hidden="true">2A</div>
+      <div class="scene-meta">
+        <p class="scene-act">Act I — Route A — Generator Protocol</p>
+        <h2 class="scene-title">Restoring Power</h2>
+      </div>
+    </div>
+
+    <div class="puzzle-card">
+      <h3>📋 Task: Order the Instructions</h3>
+      <div class="narrative-text">
+        ARIA has the generator restart protocol, but the steps are scrambled. Number each step (1–5) in the correct order. Be precise — one wrong step and the generator explodes.
+      </div>
+
+      <ul class="order-list" aria-label="Order the steps from 1 to 5">
+        <li class="order-item">
+          <select class="order-select" data-step="b" aria-label="Order for: Turn off the main switch">
+            <option value="0">—</option>
+            <option value="1">1st</option><option value="2">2nd</option>
+            <option value="3">3rd</option><option value="4">4th</option><option value="5">5th</option>
+          </select>
+          <span class="order-item-text">Turn off the main switch.</span>
+        </li>
+        <li class="order-item">
+          <select class="order-select" data-step="c" aria-label="Order for: Connect the backup cable to port 3">
+            <option value="0">—</option>
+            <option value="1">1st</option><option value="2">2nd</option>
+            <option value="3">3rd</option><option value="4">4th</option><option value="5">5th</option>
+          </select>
+          <span class="order-item-text">Connect the backup cable to port 3.</span>
+        </li>
+        <li class="order-item">
+          <select class="order-select" data-step="e" aria-label="Order for: Check the temperature gauge">
+            <option value="0">—</option>
+            <option value="1">1st</option><option value="2">2nd</option>
+            <option value="3">3rd</option><option value="4">4th</option><option value="5">5th</option>
+          </select>
+          <span class="order-item-text">Check the temperature gauge.</span>
+        </li>
+        <li class="order-item">
+          <select class="order-select" data-step="d" aria-label="Order for: Press the restart button twice">
+            <option value="0">—</option>
+            <option value="1">1st</option><option value="2">2nd</option>
+            <option value="3">3rd</option><option value="4">4th</option><option value="5">5th</option>
+          </select>
+          <span class="order-item-text">Press the restart button twice.</span>
+        </li>
+        <li class="order-item">
+          <select class="order-select" data-step="a" aria-label="Order for: Wait for the green light to appear">
+            <option value="0">—</option>
+            <option value="1">1st</option><option value="2">2nd</option>
+            <option value="3">3rd</option><option value="4">4th</option><option value="5">5th</option>
+          </select>
+          <span class="order-item-text">Wait for the green light to appear.</span>
+        </li>
+      </ul>
+
+      <div class="hint-wrap">
+        <button class="btn btn-secondary btn-sm" onclick="showHint('hint2a')" aria-expanded="false" id="hint2a-btn">
+          💡 Request ARIA Hint (-5 pts)
+        </button>
+        <div class="hint-text" id="hint2a" role="alert">
+          ARIA: "Safety first: always disconnect power before making any connections. Check conditions before activating. Verify results last."
+        </div>
+      </div>
+
+      <div id="p2a-feedback" class="feedback-box" role="alert" aria-live="assertive"></div>
+
+      <div style="margin-top:1rem">
+        <button class="btn btn-primary" onclick="checkPuzzle2A()">✓ Submit Sequence</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================== SCREEN 3B: ROUTE B — MODALS ======================== -->
+  <section class="screen" id="screen-p2b" aria-label="Act I — Route B — Signal Hypothesis">
+
+    <div class="progress-wrap">
+      <div class="progress-label"><span>Mission Progress</span><span>2 / 4 Puzzles</span></div>
+      <div class="progress-bar" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" aria-label="50% complete">
+        <div class="progress-fill" style="width:50%"></div>
+      </div>
+    </div>
+
+    <div class="scene-header">
+      <div class="scene-number" aria-hidden="true">2B</div>
+      <div class="scene-meta">
+        <p class="scene-act">Act I — Route B — Signal Hypothesis</p>
+        <h2 class="scene-title">Reading the Signal</h2>
+      </div>
+    </div>
+
+    <div class="puzzle-card">
+      <h3>📡 Task: Choose the Correct Modal Verb</h3>
+      <div class="narrative-text">
+        ARIA's language processor is damaged. Complete each hypothesis with the correct modal verb. The meaning of each sentence depends on your choice — and so does the mission.
+      </div>
+
+      <div class="question-block">
+        <p>1. "The antenna ___ be damaged. We need to check it." <em style="color:var(--text-dim);font-size:0.8rem">(near-certainty)</em></p>
+        <ul class="choice-list" role="radiogroup" aria-label="Question 1 options">
+          <li class="choice-item"><label><input type="radio" name="modal1" value="must"> <span>must</span></label></li>
+          <li class="choice-item"><label><input type="radio" name="modal1" value="might"> <span>might</span></label></li>
+          <li class="choice-item"><label><input type="radio" name="modal1" value="could"> <span>could</span></label></li>
+        </ul>
+      </div>
+
+      <div class="question-block">
+        <p>2. "If we increase the frequency, we ___ reach the satellite." <em style="color:var(--text-dim);font-size:0.8rem">(ability/possibility)</em></p>
+        <ul class="choice-list" role="radiogroup" aria-label="Question 2 options">
+          <li class="choice-item"><label><input type="radio" name="modal2" value="could"> <span>could</span></label></li>
+          <li class="choice-item"><label><input type="radio" name="modal2" value="must"> <span>must</span></label></li>
+          <li class="choice-item"><label><input type="radio" name="modal2" value="should"> <span>should</span></label></li>
+        </ul>
+      </div>
+
+      <div class="question-block">
+        <p>3. "We ___ try all options before giving up." <em style="color:var(--text-dim);font-size:0.8rem">(obligation)</em></p>
+        <ul class="choice-list" role="radiogroup" aria-label="Question 3 options">
+          <li class="choice-item"><label><input type="radio" name="modal3" value="must"> <span>must</span></label></li>
+          <li class="choice-item"><label><input type="radio" name="modal3" value="might"> <span>might</span></label></li>
+          <li class="choice-item"><label><input type="radio" name="modal3" value="could"> <span>could</span></label></li>
+        </ul>
+      </div>
+
+      <div class="hint-wrap">
+        <button class="btn btn-secondary btn-sm" onclick="showHint('hint2b')" aria-expanded="false" id="hint2b-btn">
+          💡 Request ARIA Hint (-5 pts)
+        </button>
+        <div class="hint-text" id="hint2b" role="alert">
+          ARIA: "'Must' = strong necessity or near certainty. 'Could' = possibility or ability. 'Should' = advice. Match the hint in parentheses."
+        </div>
+      </div>
+
+      <div id="p2b-feedback" class="feedback-box" role="alert" aria-live="assertive"></div>
+
+      <div style="margin-top:1rem">
+        <button class="btn btn-primary" onclick="checkPuzzle2B()">✓ Submit Answers</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================== SCREEN 4: SYNC BRIDGE ======================== -->
+  <section class="screen" id="screen-sync" aria-label="Synchronous session bridge">
+
+    <div class="scene-header">
+      <div class="scene-number" aria-hidden="true">⟳</div>
+      <div class="scene-meta">
+        <p class="scene-act">Between Acts</p>
+        <h2 class="scene-title">Team Deliberation</h2>
+      </div>
+    </div>
+
+    <div class="sync-card">
+      <h3>📅 SYNCHRONOUS SESSION — Wednesday</h3>
+      <p style="font-size:0.9rem;color:var(--text-secondary);margin-bottom:0.75rem">
+        Before continuing to Act II, your team must meet (in class or online) to compare routes and decide your joint strategy. This session is worth <strong style="color:var(--accent-purple)">+20 points</strong> — your teacher will confirm your attendance.
+      </p>
+      <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.75rem">Your team roles during the session:</p>
+      <div class="role-chips">
+        <span class="role-chip">🧭 Navigator: "We chose Route ___ because..."</span>
+        <span class="role-chip">🔑 Codebreaker: "The hardest puzzle was..."</span>
+        <span class="role-chip">📡 Communicator: "For Act II, I think we should..."</span>
+        <span class="role-chip">⏱ Timekeeper: "We have 5 minutes left..."</span>
+      </div>
+    </div>
+
+    <div class="aria-terminal">
+      <p class="aria-text">ARIA: "Excellent work completing Act I. Signal strength at <strong style="color:var(--accent-amber)">61%</strong>. Two final modules remain locked until your team confirms the synchronous session. When your teacher has confirmed your attendance, click below to continue."<span class="cursor" aria-hidden="true"></span></p>
+    </div>
+
+    <div class="puzzle-card">
+      <h3>✅ TEACHER CONFIRMATION</h3>
+      <p style="font-size:0.9rem;color:var(--text-secondary);margin-bottom:1rem">
+        Has your teacher confirmed your synchronous session participation? Clicking "Yes" will add +20 points to your score. Only confirm if your teacher has verified it.
+      </p>
+      <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="confirmSync(true)">✓ Yes — Session Confirmed (+20 pts)</button>
+        <button class="btn btn-secondary" onclick="confirmSync(false)">→ Continue Without Confirmation</button>
+      </div>
+      <div id="sync-feedback" class="feedback-box" role="alert" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- ======================== SCREEN 5: PUZZLE 3 — MAP ======================== -->
+  <section class="screen" id="screen-p3" aria-label="Act II — Puzzle 3 — Sector Map">
+
+    <div class="progress-wrap">
+      <div class="progress-label"><span>Mission Progress</span><span>3 / 4 Puzzles</span></div>
+      <div class="progress-bar" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" aria-label="75% complete">
+        <div class="progress-fill" style="width:75%"></div>
+      </div>
+    </div>
+
+    <div class="scene-header">
+      <div class="scene-number" aria-hidden="true">3</div>
+      <div class="scene-meta">
+        <p class="scene-act">Act II — The Final Transmission</p>
+        <h2 class="scene-title">Puzzle 3: The Sector Map</h2>
+      </div>
+    </div>
+
+    <div class="puzzle-card">
+      <h3>🗺️ Task: Read the Map Legend</h3>
+      <div class="narrative-text">
+        ARIA has restored a partial map of Base Meridian. Read the legend carefully and select the two sectors that should be activated to create the best signal path.
+      </div>
+
+      <div class="reading-passage" style="margin-bottom:1rem">
+        <strong style="color:var(--accent-cyan)">MAP LEGEND:</strong><br>
+        • Sectors marked with a <em>▲ triangle</em> are <em>OFFLINE</em> — cannot transmit.<br>
+        • Sectors marked with a <em>● circle</em> are <em>OPERATIONAL</em> — fully functional.<br>
+        • Sectors marked with a <em>⚠ warning sign</em> have a <em>MALFUNCTION</em> — unreliable.<br><br>
+        The signal must pass through <em>at least two fully operational sectors</em> to reach the satellite.<br>
+        <strong>Sector D is offline. Sector B has a malfunction warning.</strong>
+      </div>
+
+      <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.75rem">Select exactly 2 sectors to activate:</p>
+
+      <div class="sector-grid" role="group" aria-label="Sector selection — choose 2 operational sectors">
+        <button class="sector-btn operational" id="sec-A" onclick="toggleSector('A')" aria-pressed="false">
+          <span class="sector-name">A</span>
+          <span class="sector-status">● OPERATIONAL</span>
+        </button>
+        <button class="sector-btn malfunction" id="sec-B" onclick="toggleSector('B')" aria-pressed="false">
+          <span class="sector-name">B</span>
+          <span class="sector-status">⚠ MALFUNCTION</span>
+        </button>
+        <button class="sector-btn operational" id="sec-C" onclick="toggleSector('C')" aria-pressed="false">
+          <span class="sector-name">C</span>
+          <span class="sector-status">● OPERATIONAL</span>
+        </button>
+        <button class="sector-btn offline" id="sec-D" onclick="toggleSector('D')" aria-pressed="false">
+          <span class="sector-name">D</span>
+          <span class="sector-status">▲ OFFLINE</span>
+        </button>
+        <button class="sector-btn operational" id="sec-E" onclick="toggleSector('E')" aria-pressed="false">
+          <span class="sector-name">E</span>
+          <span class="sector-status">● OPERATIONAL</span>
+        </button>
+        <button class="sector-btn operational" id="sec-F" onclick="toggleSector('F')" aria-pressed="false">
+          <span class="sector-name">F</span>
+          <span class="sector-status">● OPERATIONAL</span>
+        </button>
+      </div>
+
+      <div id="selected-sectors" style="font-family:var(--font-display);font-size:0.8rem;color:var(--text-secondary);margin-top:0.5rem;min-height:1.2rem" aria-live="polite">
+        Selected: (none)
+      </div>
+
+      <div class="hint-wrap">
+        <button class="btn btn-secondary btn-sm" onclick="showHint('hint3')" aria-expanded="false" id="hint3-btn">
+          💡 Request ARIA Hint (-5 pts)
+        </button>
+        <div class="hint-text" id="hint3" role="alert">
+          ARIA: "Re-read the legend. You need FULLY OPERATIONAL sectors only. The legend clearly states which sectors are offline or malfunctioning. Eliminate those first."
+        </div>
+      </div>
+
+      <div id="p3-feedback" class="feedback-box" role="alert" aria-live="assertive"></div>
+
+      <div style="margin-top:1rem">
+        <button class="btn btn-primary" onclick="checkPuzzle3()">✓ Activate Sectors</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================== SCREEN 6: PUZZLE 4 — READING ======================== -->
+  <section class="screen" id="screen-p4" aria-label="Act II — Puzzle 4 — Dr. Voss's Last Message">
+
+    <div class="progress-wrap">
+      <div class="progress-label"><span>Mission Progress</span><span>4 / 4 Puzzles</span></div>
+      <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" aria-label="100% complete">
+        <div class="progress-fill" style="width:100%"></div>
+      </div>
+    </div>
+
+    <div class="scene-header">
+      <div class="scene-number" aria-hidden="true">4</div>
+      <div class="scene-meta">
+        <p class="scene-act">Act II — Final Module</p>
+        <h2 class="scene-title">Puzzle 4: Dr. Voss's Last Message</h2>
+      </div>
+    </div>
+
+    <div class="puzzle-card">
+      <h3>📻 Task: Comprehension Questions</h3>
+      <div class="narrative-text">
+        This is the final audio log from Dr. Voss before the complete communication blackout. Read it carefully — there are 4 questions that unlock the rescue transmission.
+      </div>
+
+      <div class="reading-passage scroll-passage" tabindex="0" aria-label="Dr. Voss's final message — scroll to read">
+        <strong style="color:var(--accent-cyan)">📻 Dr. Voss — Audio Log 7 — Final Entry</strong><br><br>
+        "If you're hearing this, you found the backup transmitter. <em>Good.</em> The rescue team is waiting at coordinates <em>7-Alpha</em>. But there's something you should know: the storm will arrive in <em>six hours</em>. If the signal isn't restored before then, the ice will block all communication for <em>three weeks</em>.<br><br>
+        I've left the final code in my journal — <em>page 47</em>. The key word is the name of the first scientist who worked here. Look for it in my notes.<br><br>
+        I don't know if you can hear me. I don't know if this will work. But I have to try. If you're listening... please hurry. We're running out of time."
+      </div>
+
+      <div class="question-block" style="margin-top:1.25rem">
+        <p>Question 1: How long do they have before the storm arrives?</p>
+        <ul class="choice-list" role="radiogroup" aria-label="Question 1">
+          <li class="choice-item"><label><input type="radio" name="q1" value="wrong1"> <span>Three weeks</span></label></li>
+          <li class="choice-item"><label><input type="radio" name="q1" value="correct"> <span>Six hours</span></label></li>
+          <li class="choice-item"><label><input type="radio" name="q1" value="wrong2"> <span>One day</span></label></li>
+        </ul>
+      </div>
+
+      <div class="question-block">
+        <p>Question 2: Where is the final code?</p>
+        <ul class="choice-list" role="radiogroup" aria-label="Question 2">
+          <li class="choice-item"><label><input type="radio" name="q2" value="wrong1"> <span>In the transmitter room</span></label></li>
+          <li class="choice-item"><label><input type="radio" name="q2" value="wrong2"> <span>On the backup computer</span></label></li>
+          <li class="choice-item"><label><input type="radio" name="q2" value="correct"> <span>In Dr. Voss's journal, page 47</span></label></li>
+        </ul>
+      </div>
+
+      <div class="question-block">
+        <p>Question 3: What happens if they fail to restore the signal in time?</p>
+        <ul class="choice-list" role="radiogroup" aria-label="Question 3">
+          <li class="choice-item"><label><input type="radio" name="q3" value="correct"> <span>Communication will be blocked for three weeks</span></label></li>
+          <li class="choice-item"><label><input type="radio" name="q3" value="wrong1"> <span>The rescue team will leave permanently</span></label></li>
+          <li class="choice-item"><label><input type="radio" name="q3" value="wrong2"> <span>The base will lose all power</span></label></li>
+        </ul>
+      </div>
+
+      <div class="question-block">
+        <p>Question 4: What does Dr. Voss need to complete the final code?</p>
+        <ul class="choice-list" role="radiogroup" aria-label="Question 4">
+          <li class="choice-item"><label><input type="radio" name="q4" value="wrong1"> <span>The coordinates of the satellite</span></label></li>
+          <li class="choice-item"><label><input type="radio" name="q4" value="correct"> <span>The name of the first scientist who worked at the base</span></label></li>
+          <li class="choice-item"><label><input type="radio" name="q4" value="wrong2"> <span>The password for the backup transmitter</span></label></li>
+        </ul>
+      </div>
+
+      <div class="hint-wrap">
+        <button class="btn btn-secondary btn-sm" onclick="showHint('hint4')" aria-expanded="false" id="hint4-btn">
+          💡 Request ARIA Hint (-5 pts)
+        </button>
+        <div class="hint-text" id="hint4" role="alert">
+          ARIA: "Read each question carefully against the text. The answers are all explicitly stated in Dr. Voss's message. Underline the key numbers and locations as you read."
+        </div>
+      </div>
+
+      <div id="p4-feedback" class="feedback-box" role="alert" aria-live="assertive"></div>
+
+      <div style="margin-top:1rem">
+        <button class="btn btn-primary" onclick="checkPuzzle4()">✓ Submit Final Answers</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================== FINAL A: FULL RESCUE ======================== -->
+  <section class="screen" id="screen-final-a" aria-label="Final outcome A — Full Rescue">
+    <div class="final-banner">
+      <div class="final-icon" aria-hidden="true">📡</div>
+      <h2 class="final-title success">FULL RESCUE</h2>
+      <p style="color:var(--text-secondary);margin-bottom:0.5rem;font-family:var(--font-display)">TRANSMISSION COMPLETE</p>
+      <div class="final-score-display" aria-label="Final score" id="final-score-a">—</div>
+      <div id="final-level-a" style="font-family:var(--font-display);font-size:1rem;color:var(--accent-amber);margin-bottom:1rem"></div>
+    </div>
+
+    <div class="final-narrative">
+      <em>"The signal restores. The hum of the transmitter fills the room. ARIA's screen flickers to full brightness for the first time.</em><br><br>
+      ARIA: "Transmission complete. All personnel accounted for. Signal locked to coordinates 7-Alpha."<br><br>
+      <em>Then, through the static — a voice. Dr. Voss, exhausted but clear:</em><br><br>
+      "I can hear you. We're all safe. You did it."<br><br>
+      <em>The world receives the signal. Base Meridian is no longer silent.</em>"
+    </div>
+
+    <div id="badges-final-a" class="badge-grid" role="list" aria-label="Earned badges" style="margin-bottom:1.5rem"></div>
+
+    <div class="stats-grid" id="stats-a"></div>
+
+    <div class="divider"></div>
+    <button class="btn btn-secondary btn-full" onclick="resetGame()" style="margin-top:0.75rem">↺ Play Again</button>
+  </section>
+
+  <!-- ======================== FINAL B: PARTIAL SIGNAL ======================== -->
+  <section class="screen" id="screen-final-b" aria-label="Final outcome B — Partial Signal">
+    <div class="final-banner">
+      <div class="final-icon" aria-hidden="true">⚡</div>
+      <h2 class="final-title partial">PARTIAL SIGNAL</h2>
+      <p style="color:var(--text-secondary);margin-bottom:0.5rem;font-family:var(--font-display)">MISSION PARTIALLY COMPLETE</p>
+      <div class="final-score-display" aria-label="Final score" id="final-score-b">—</div>
+      <div id="final-level-b" style="font-family:var(--font-display);font-size:1rem;color:var(--accent-amber);margin-bottom:1rem"></div>
+    </div>
+
+    <div class="final-narrative">
+      <em>"The signal reaches the satellite — but it's unstable. The rescue team receives fragmented coordinates.</em><br><br>
+      ARIA: "Signal unstable. Partial success. Some data lost. Three personnel evacuated. Two still at the base. The mission continues."<br><br>
+      <em>Dr. Voss's voice, breaking through static:</em><br><br>
+      "We heard you. Most of us are safe. Keep trying — don't give up on the others."<br><br>
+      <em>There is hope. But also work left to do.</em>"
+    </div>
+
+    <div id="badges-final-b" class="badge-grid" role="list" aria-label="Earned badges" style="margin-bottom:1.5rem"></div>
+
+    <div class="stats-grid" id="stats-b"></div>
+
+    <div class="divider"></div>
+    <button class="btn btn-secondary btn-full" onclick="resetGame()" style="margin-top:0.75rem">↺ Play Again</button>
+  </section>
+
+  <!-- ======================== FINAL C: NEW COORDINATES ======================== -->
+  <section class="screen" id="screen-final-c" aria-label="Final outcome C — New Coordinates">
+    <div class="final-banner">
+      <div class="final-icon" aria-hidden="true">🌐</div>
+      <h2 class="final-title redirect">NEW COORDINATES</h2>
+      <p style="color:var(--text-secondary);margin-bottom:0.5rem;font-family:var(--font-display)">SIGNAL REDIRECTED — NEW PATH FOUND</p>
+      <div class="final-score-display" aria-label="Final score" id="final-score-c">—</div>
+      <div id="final-level-c" style="font-family:var(--font-display);font-size:1rem;color:var(--accent-amber);margin-bottom:1rem"></div>
+    </div>
+
+    <div class="final-narrative">
+      <em>"The signal doesn't reach Meridian. But in the attempt, something unexpected appears on ARIA's screen.</em><br><br>
+      ARIA: "Mission incomplete. However — anomalous signal detected. Unknown origin. Coordinates: 12-Zeta. A second installation, unknown to any public record."<br><br>
+      <em>The team stares at the screen. This isn't failure. This is a new discovery — and a new mission.</em><br><br>
+      "Follow the coordinates. The story is not over. It has only changed direction."<br><br>
+      <em>Sometimes the path you didn't plan leads somewhere more important.</em>"
+    </div>
+
+    <div class="aria-terminal" style="margin-bottom:1rem">
+      <p class="aria-text" style="color:var(--accent-purple)">ARIA: "Your effort revealed something the world didn't know existed. That is also a kind of success. Well done, agent."<span class="cursor" aria-hidden="true"></span></p>
+    </div>
+
+    <div id="badges-final-c" class="badge-grid" role="list" aria-label="Earned badges" style="margin-bottom:1.5rem"></div>
+
+    <div class="stats-grid" id="stats-c"></div>
+
+    <div class="divider"></div>
+    <button class="btn btn-secondary btn-full" onclick="resetGame()" style="margin-top:0.75rem">↺ Play Again</button>
+  </section>
+
+</main>
+
+<script>
+// =====================================================================
+// STATE
+// =====================================================================
+const STATE = {
+  points: 0,
+  agentName: '',
+  agentRole: '',
+  route: null,
+  act: '—',
+  badges: [],
+  hintsUsed: [],
+  p1Done: false,
+  p2Done: false,
+  p3Done: false,
+  p4Done: false,
+  syncDone: false,
+  p1Correct: false,
+  p2Correct: false,
+  p3Correct: false,
+  p4Correct: false,
+  puzzleAttempts: { p1:0, p2:0, p3:0, p4:0 },
+  correctCount: 0,
+  quickAct1: false,
+  act1StartTime: null,
+  selectedSectors: []
+};
+
+// =====================================================================
+// SAVE / LOAD
+// =====================================================================
+function saveState() {
+  try { localStorage.setItem('tls_state', JSON.stringify(STATE)); } catch(e){}
+}
+
+function loadState() {
+  try {
+    const s = localStorage.getItem('tls_state');
+    if (s) {
+      const parsed = JSON.parse(s);
+      Object.assign(STATE, parsed);
+    }
+  } catch(e){}
+}
+
+// =====================================================================
+// POINTS
+// =====================================================================
+function addPoints(n, reason) {
+  STATE.points = Math.max(0, STATE.points + n);
+  updateHUD();
+  saveState();
+}
+
+function updateHUD() {
+  document.getElementById('hud-points').textContent = STATE.points;
+  document.getElementById('hud-level').textContent = getLevel().num;
+  document.getElementById('hud-act').textContent = STATE.act;
+}
+
+// =====================================================================
+// LEVELS
+// =====================================================================
+function getLevel() {
+  const p = STATE.points;
+  if (p >= 120) return { num: 4, name: 'Chief Communicator', icon: '🏆' };
+  if (p >= 80)  return { num: 3, name: 'Frequency Decoder', icon: '📡' };
+  if (p >= 40)  return { num: 2, name: 'Signal Tracker', icon: '🔊' };
+  return { num: 1, name: 'Static Listener', icon: '📻' };
+}
+
+// =====================================================================
+// BADGES
+// =====================================================================
+function earnBadge(id, label) {
+  if (!STATE.badges.includes(id)) {
+    STATE.badges.push(id);
+    saveState();
+  }
+}
+
+function renderBadges(containerId) {
+  const allBadges = [
+    { id: 'first_contact', emoji: '🔊', label: 'First Contact' },
+    { id: 'codebreaker',   emoji: '🔑', label: 'Codebreaker' },
+    { id: 'quick',         emoji: '⚡', label: 'Quick Responder' },
+    { id: 'team_signal',   emoji: '🤝', label: 'Team Signal' },
+    { id: 'full_rescue',   emoji: '📡', label: 'Full Transmission' },
+    { id: 'new_horizons',  emoji: '🌍', label: 'New Horizons' },
+  ];
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = allBadges.map(b => {
+    const earned = STATE.badges.includes(b.id);
+    return `<div class="badge ${earned?'earned':''}" role="listitem" aria-label="${b.label} — ${earned?'earned':'not yet earned'}">${b.emoji} ${b.label}</div>`;
+  }).join('');
+}
+
+// =====================================================================
+// SCREENS
+// =====================================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById(id);
+  if (target) {
+    target.classList.add('active');
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    target.focus && target.setAttribute('tabindex', '-1') && target.focus();
+  }
+}
+
+// =====================================================================
+// START
+// =====================================================================
+function startMission() {
+  const name = document.getElementById('agent-name').value.trim();
+  const role = document.getElementById('agent-role').value;
+  if (!name) { alert('Please enter your agent name to begin.'); return; }
+  if (!role) { alert('Please select your team role to begin.'); return; }
+  STATE.agentName = name;
+  STATE.agentRole = role;
+  STATE.act = 'I';
+  STATE.act1StartTime = Date.now();
+  addPoints(0, 'start');
+  earnBadge('first_contact', 'First Contact');
+  updateHUD();
+  saveState();
+  showScreen('screen-p1');
+}
+
+// =====================================================================
+// PUZZLE 1
+// =====================================================================
+function checkPuzzle1() {
+  if (STATE.p1Done) { showScreen('screen-route'); return; }
+  STATE.puzzleAttempts.p1++;
+
+  const b1 = document.getElementById('blank1').value;
+  const b2 = document.getElementById('blank2').value;
+  const b3 = document.getElementById('blank3').value;
+  const b4 = document.getElementById('blank4').value;
+
+  if (!b1 || !b2 || !b3 || !b4) {
+    showFeedback('p1-feedback', 'error', 'ARIA: "Incomplete data. Please fill all the blanks before submitting."');
+    return;
+  }
+
+  const correct = (b1 === 'sector' && b2 === 'button' && b3 === 'stabilize' && b4 === 'touch');
+
+  if (correct) {
+    STATE.p1Done = true;
+    STATE.p1Correct = true;
+    STATE.correctCount++;
+    const pts = STATE.puzzleAttempts.p1 === 1 ? 30 : 15;
+    addPoints(pts, 'p1');
+    if (STATE.puzzleAttempts.p1 === 1) earnBadge('codebreaker', 'Codebreaker');
+    showFeedback('p1-feedback', 'success', `✓ ARIA: "Message reconstructed. +${pts} points added. Signal clarity improving. Proceed to route selection."`, () => {
+      setTimeout(() => showScreen('screen-route'), 1500);
+    });
+  } else {
+    addPoints(-10, 'p1-wrong');
+    showFeedback('p1-feedback', 'error', `✗ ARIA: "Incorrect combination. Signal distorted. -10 points. Attempt ${STATE.puzzleAttempts.p1}. Use the hint if needed and try again."`);
+  }
+  saveState();
+}
+
+// =====================================================================
+// ROUTE CHOICE
+// =====================================================================
+function chooseRoute(r) {
+  STATE.route = r;
+  saveState();
+  showScreen(r === 'A' ? 'screen-p2a' : 'screen-p2b');
+}
+
+// =====================================================================
+// PUZZLE 2A
+// =====================================================================
+function checkPuzzle2A() {
+  if (STATE.p2Done) { proceedToSync(); return; }
+  STATE.puzzleAttempts.p2++;
+
+  const selects = document.querySelectorAll('#screen-p2a .order-select');
+  const values = {};
+  let allFilled = true;
+  selects.forEach(s => {
+    if (!s.value || s.value === '0') allFilled = false;
+    values[s.dataset.step] = parseInt(s.value);
+  });
+
+  if (!allFilled) {
+    showFeedback('p2a-feedback', 'error', 'ARIA: "You must assign a position to every step."');
+    return;
+  }
+
+  // Correct: b=1, c=2, e=3, d=4, a=5
+  const correct = (values.b===1 && values.c===2 && values.e===3 && values.d===4 && values.a===5);
+
+  if (correct) {
+    STATE.p2Done = true;
+    STATE.p2Correct = true;
+    STATE.correctCount++;
+    const pts = STATE.puzzleAttempts.p2 === 1 ? 30 : 15;
+    addPoints(pts, 'p2a');
+    checkQuickAct1();
+    showFeedback('p2a-feedback', 'success', `✓ ARIA: "Generator protocol executed correctly. +${pts} points. Power restored to 78%. Proceeding to synchronous briefing."`, () => {
+      setTimeout(() => showScreen('screen-sync'), 1800);
+    });
+  } else {
+    addPoints(-10, 'p2a-wrong');
+    showFeedback('p2a-feedback', 'error', `✗ ARIA: "Protocol sequence error. -10 points. The generator requires a specific safety order. Think: what must happen first for safety? Attempt ${STATE.puzzleAttempts.p2}."`);
+  }
+  saveState();
+}
+
+// =====================================================================
+// PUZZLE 2B
+// =====================================================================
+function checkPuzzle2B() {
+  if (STATE.p2Done) { proceedToSync(); return; }
+  STATE.puzzleAttempts.p2++;
+
+  const m1 = document.querySelector('input[name="modal1"]:checked');
+  const m2 = document.querySelector('input[name="modal2"]:checked');
+  const m3 = document.querySelector('input[name="modal3"]:checked');
+
+  if (!m1 || !m2 || !m3) {
+    showFeedback('p2b-feedback', 'error', 'ARIA: "Incomplete. Please answer all three questions."');
+    return;
+  }
+
+  const correct = (m1.value === 'must' && m2.value === 'could' && m3.value === 'must');
+  let score = 0;
+  if (m1.value === 'must') score++;
+  if (m2.value === 'could') score++;
+  if (m3.value === 'must') score++;
+
+  if (correct) {
+    STATE.p2Done = true;
+    STATE.p2Correct = true;
+    STATE.correctCount++;
+    const pts = STATE.puzzleAttempts.p2 === 1 ? 30 : 15;
+    addPoints(pts, 'p2b');
+    checkQuickAct1();
+    showFeedback('p2b-feedback', 'success', `✓ ARIA: "Signal hypothesis verified. All modal verbs correct. +${pts} points. Communication array at 85%. Proceeding to synchronous briefing."`, () => {
+      setTimeout(() => showScreen('screen-sync'), 1800);
+    });
+  } else {
+    addPoints(-10, 'p2b-wrong');
+    showFeedback('p2b-feedback', 'error', `✗ ARIA: "Modal analysis incomplete. ${score}/3 correct. -10 points. Reconsider: 'must' expresses certainty or obligation; 'could' expresses possibility. Attempt ${STATE.puzzleAttempts.p2}."`);
+  }
+  saveState();
+}
+
+function checkQuickAct1() {
+  if (STATE.act1StartTime) {
+    const elapsed = (Date.now() - STATE.act1StartTime) / 1000 / 60;
+    if (elapsed < 20) earnBadge('quick', 'Quick Responder');
+  }
+}
+
+function proceedToSync() {
+  showScreen('screen-sync');
+}
+
+// =====================================================================
+// SYNC CONFIRMATION
+// =====================================================================
+function confirmSync(confirmed) {
+  STATE.act = 'II';
+  if (confirmed && !STATE.syncDone) {
+    STATE.syncDone = true;
+    addPoints(20, 'sync');
+    earnBadge('team_signal', 'Team Signal');
+    showFeedback('sync-feedback', 'success', '✓ ARIA: "+20 points for synchronous session participation. Team collaboration confirmed. Unlocking Act II modules."', () => {
+      setTimeout(() => { STATE.act = 'II'; updateHUD(); showScreen('screen-p3'); }, 1800);
+    });
+  } else if (!confirmed) {
+    showFeedback('sync-feedback', 'info', 'ARIA: "Synchronous bonus not applied. Continuing to Act II. Your individual score is still counted."', () => {
+      setTimeout(() => { STATE.act = 'II'; updateHUD(); showScreen('screen-p3'); }, 1800);
+    });
+  } else {
+    showScreen('screen-p3');
+  }
+  saveState();
+}
+
+// =====================================================================
+// PUZZLE 3 — SECTORS
+// =====================================================================
+function toggleSector(id) {
+  const btn = document.getElementById('sec-' + id);
+  const idx = STATE.selectedSectors.indexOf(id);
+
+  if (idx > -1) {
+    STATE.selectedSectors.splice(idx, 1);
+    btn.classList.remove('selected');
+    btn.setAttribute('aria-pressed', 'false');
+  } else {
+    if (STATE.selectedSectors.length >= 2) {
+      const removed = STATE.selectedSectors.shift();
+      const oldBtn = document.getElementById('sec-' + removed);
+      if (oldBtn) { oldBtn.classList.remove('selected'); oldBtn.setAttribute('aria-pressed','false'); }
+    }
+    STATE.selectedSectors.push(id);
+    btn.classList.add('selected');
+    btn.setAttribute('aria-pressed', 'true');
+  }
+
+  const disp = document.getElementById('selected-sectors');
+  if (disp) {
+    disp.textContent = STATE.selectedSectors.length > 0
+      ? 'Selected: ' + STATE.selectedSectors.join(' + ')
+      : 'Selected: (none)';
+  }
+}
+
+function checkPuzzle3() {
+  if (STATE.p3Done) { showScreen('screen-p4'); return; }
+  STATE.puzzleAttempts.p3++;
+
+  const sel = STATE.selectedSectors.slice().sort();
+  if (sel.length !== 2) {
+    showFeedback('p3-feedback', 'error', 'ARIA: "You must select exactly 2 sectors."');
+    return;
+  }
+
+  // Accept any two from A, C, E, F (all operational, not B/D)
+  const operational = ['A','C','E','F'];
+  const correct = sel.every(s => operational.includes(s));
+
+  if (correct) {
+    STATE.p3Done = true;
+    STATE.p3Correct = true;
+    STATE.correctCount++;
+    const pts = STATE.puzzleAttempts.p3 === 1 ? 25 : 12;
+    addPoints(pts, 'p3');
+    showFeedback('p3-feedback', 'success', `✓ ARIA: "Optimal signal path established through sectors ${sel.join(' and ')}. +${pts} points. Transmission corridor is live. One final module remaining."`, () => {
+      setTimeout(() => showScreen('screen-p4'), 1800);
+    });
+  } else {
+    addPoints(-10, 'p3-wrong');
+    showFeedback('p3-feedback', 'error', `✗ ARIA: "Signal path compromised. One or more selected sectors are non-operational. Re-read the map legend carefully. -10 points. Attempt ${STATE.puzzleAttempts.p3}."`);
+  }
+  saveState();
+}
+
+// =====================================================================
+// PUZZLE 4 — READING
+// =====================================================================
+function checkPuzzle4() {
+  if (STATE.p4Done) { showFinalScreen(); return; }
+  STATE.puzzleAttempts.p4++;
+
+  const q1 = document.querySelector('input[name="q1"]:checked');
+  const q2 = document.querySelector('input[name="q2"]:checked');
+  const q3 = document.querySelector('input[name="q3"]:checked');
+  const q4 = document.querySelector('input[name="q4"]:checked');
+
+  if (!q1 || !q2 || !q3 || !q4) {
+    showFeedback('p4-feedback', 'error', 'ARIA: "Please answer all four questions before submitting."');
+    return;
+  }
+
+  let score = 0;
+  if (q1.value === 'correct') score++;
+  if (q2.value === 'correct') score++;
+  if (q3.value === 'correct') score++;
+  if (q4.value === 'correct') score++;
+
+  const allCorrect = score === 4;
+  const pts = allCorrect
+    ? (STATE.puzzleAttempts.p4 === 1 ? 25 : 12)
+    : Math.round((score / 4) * 25);
+
+  addPoints(pts, 'p4');
+  STATE.p4Done = true;
+  STATE.p4Correct = allCorrect;
+  if (allCorrect) STATE.correctCount++;
+
+  const msg = allCorrect
+    ? `✓ ARIA: "All four comprehension checks passed. +${pts} points. Signal fully aligned. Initiating final transmission sequence..."`
+    : `✓ ARIA: "${score}/4 answers correct. +${pts} points. Partial comprehension detected. Initiating transmission with available data..."`;
+
+  showFeedback('p4-feedback', allCorrect ? 'success' : 'info', msg, () => {
+    setTimeout(() => showFinalScreen(), 2200);
+  });
+  saveState();
+}
+
+// =====================================================================
+// FINAL SCREEN
+// =====================================================================
+function showFinalScreen() {
+  const p = STATE.points;
+  let finalId;
+
+  if (p >= 120) {
+    finalId = 'screen-final-a';
+    earnBadge('full_rescue', 'Full Transmission');
+  } else if (p >= 60) {
+    finalId = 'screen-final-b';
+  } else {
+    finalId = 'screen-final-c';
+    earnBadge('new_horizons', 'New Horizons');
+  }
+
+  const suffix = finalId.replace('screen-final-','');
+  const lv = getLevel();
+
+  document.getElementById('final-score-' + suffix).textContent = p + ' pts';
+  document.getElementById('final-level-' + suffix).textContent = lv.icon + ' ' + lv.name;
+
+  renderBadges('badges-final-' + suffix);
+
+  const statsHtml = `
+    <div class="stat-cell"><div class="stat-val">${STATE.points}</div><div class="stat-name">Total Points</div></div>
+    <div class="stat-cell"><div class="stat-val">${STATE.correctCount}</div><div class="stat-name">Puzzles Correct</div></div>
+    <div class="stat-cell"><div class="stat-val">${STATE.badges.length}</div><div class="stat-name">Badges Earned</div></div>
+    <div class="stat-cell"><div class="stat-val">${STATE.route || '—'}</div><div class="stat-name">Route Taken</div></div>
+  `;
+  document.getElementById('stats-' + suffix).innerHTML = statsHtml;
+
+  showScreen(finalId);
+}
+
+// =====================================================================
+// RESET
+// =====================================================================
+function resetGame() {
+  if (!confirm('Reset the game? All progress will be lost.')) return;
+  try { localStorage.removeItem('tls_state'); } catch(e){}
+  Object.assign(STATE, {
+    points:0, agentName:'', agentRole:'', route:null, act:'—',
+    badges:[], hintsUsed:[], p1Done:false, p2Done:false, p3Done:false, p4Done:false,
+    syncDone:false, p1Correct:false, p2Correct:false, p3Correct:false, p4Correct:false,
+    puzzleAttempts:{p1:0,p2:0,p3:0,p4:0}, correctCount:0, quickAct1:false,
+    act1StartTime:null, selectedSectors:[]
+  });
+  updateHUD();
+  document.getElementById('agent-name').value = '';
+  document.getElementById('agent-role').value = '';
+  showScreen('screen-welcome');
+}
+
+// =====================================================================
+// HINTS
+// =====================================================================
+function showHint(id) {
+  const el = document.getElementById(id);
+  const btn = document.getElementById(id + '-btn');
+  if (!el) return;
+  if (!STATE.hintsUsed.includes(id)) {
+    STATE.hintsUsed.push(id);
+    addPoints(-5, 'hint');
+  }
+  el.classList.add('visible');
+  if (btn) btn.setAttribute('aria-expanded', 'true');
+  saveState();
+}
+
+// =====================================================================
+// FEEDBACK HELPER
+// =====================================================================
+function showFeedback(id, type, msg, cb) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.className = 'feedback-box ' + type;
+  el.innerHTML = msg;
+  el.style.display = 'block';
+  if (cb) cb();
+}
+
+// =====================================================================
+// HIGH CONTRAST
+// =====================================================================
+function toggleContrast() {
+  const body = document.body;
+  const btn = document.getElementById('contrast-btn');
+  const isOn = body.classList.toggle('high-contrast');
+  btn.setAttribute('aria-pressed', isOn ? 'true' : 'false');
+  try { localStorage.setItem('tls_contrast', isOn ? '1' : '0'); } catch(e){}
+}
+
+// =====================================================================
+// INIT
+// =====================================================================
+window.addEventListener('DOMContentLoaded', () => {
+  loadState();
+  updateHUD();
+
+  // Restore contrast preference
+  try {
+    if (localStorage.getItem('tls_contrast') === '1') {
+      document.body.classList.add('high-contrast');
+      document.getElementById('contrast-btn').setAttribute('aria-pressed','true');
+    }
+  } catch(e){}
+
+  // Respect reduced motion
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.querySelectorAll('.signal-dot').forEach(d => d.style.animation = 'none');
+    document.querySelectorAll('.cursor').forEach(c => c.style.animation = 'none');
+  }
+});
+</script>
+</body>
+</html>
